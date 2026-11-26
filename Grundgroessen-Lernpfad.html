@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Vom Elektroskop zum Stromkreis</title>
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f172a;--muted:#475569;--line:#d8dee8;--brand:#0f2a4a;--accent:#2563eb;--pos:#dc2626;--neg:#2563eb;--ok:#059669;--warn:#d97706;--el:#7c3aed;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.45}
+header{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;display:flex;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+header h1{font-size:17px;margin:0;white-space:nowrap;font-weight:700}
+nav{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;border:0;border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;min-height:40px}
+nav button.on{background:#fff;color:var(--brand)}
+nav button .ck{color:#86efac;margin-left:4px}
+main{max-width:1180px;margin:0 auto;padding:12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-bottom:60px}
+h2{font-size:22px;margin:4px 0 6px}
+h3{font-size:16.5px;margin:0 0 8px;color:var(--brand)}
+.lead{margin:0 0 12px;color:var(--muted);font-size:16.5px}
+.card{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card.real{border-left:5px solid var(--warn)}
+.card.model{border-left:5px solid var(--el)}
+.card.meter{border-left:5px solid var(--ok)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (orientation:portrait),(max-width:860px){.grid2{grid-template-columns:1fr} header h1 .t{display:none}}
+.stage{background:#f4f7fb;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.stage svg{display:block;width:100%;height:auto;max-height:58vh;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.btn{border:0;border-radius:10px;padding:10px 13px;font-size:15px;font-weight:600;background:#e2e8f0;color:var(--ink);min-height:44px;font-family:inherit}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.on{background:#fde68a;box-shadow:inset 0 0 0 2px var(--warn)}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.btn:disabled{opacity:.45}
+.btn:active{transform:scale(.97)}
+.seg{display:inline-flex;flex-wrap:wrap;background:#e2e8f0;border-radius:10px;padding:3px;gap:3px}
+.seg .btn{background:transparent;min-height:40px;padding:8px 12px}
+.seg .btn.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lbl-s{font-size:13px;color:var(--muted);margin:8px 0 4px;font-weight:600}
+.msg{min-height:24px;font-size:15px;color:var(--brand);font-weight:600;padding:8px 10px;border-radius:8px;background:#eff6ff;margin-top:6px}
+.msg.bad{background:#fef2f2;color:#991b1b}
+.msg.good{background:#ecfdf5;color:#065f46}
+input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:6px}
+th,td{border:1px solid var(--line);padding:6px;text-align:center}
+th{background:#f1f5f9;font-weight:600}
+details{background:#f8fafc;border-radius:10px;padding:8px 12px;margin-top:8px}
+summary{font-weight:700;color:var(--brand);padding:4px 0;cursor:pointer}
+.merk{background:#fef9c3;border-radius:10px;padding:10px 12px;margin-top:8px;border-left:5px solid #eab308}
+.small{font-size:13.5px;color:var(--muted)}
+.formula{font-size:22px;font-weight:700;text-align:center;padding:10px;background:#f1f5f9;border-radius:10px;margin:8px 0;font-family:"Times New Roman",Georgia,serif}
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:6px 0}
+.chain .st{flex:1 1 180px;background:#f8fafc;border:2px solid var(--line);border-radius:12px;padding:10px}
+.chain .st b{color:var(--brand)}
+.chain .st.go{cursor:pointer}
+.chain .st.go:active{transform:scale(.98)}
+.bar{height:16px;border-radius:8px;background:#e2e8f0;overflow:hidden;margin:3px 0 8px}
+.bar>i{display:block;height:100%;border-radius:8px;background:var(--accent);transition:width .25s}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.kv b{font-variant-numeric:tabular-nums}
+.calc{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:16px}
+.calc input{width:90px;font-size:16px;padding:8px;border:2px solid var(--line);border-radius:8px}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:#ede9fe;color:#5b21b6;margin-right:6px}
+.tag.v{background:#ffedd5;color:#9a3412}
+ul.tight{margin:4px 0;padding-left:22px}ul.tight li{margin-bottom:4px}
+/* Selbsttest */
+.q{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.q p.qt{margin:0 0 8px;font-weight:600}
+.q .opt{display:block;width:100%;text-align:left;margin-bottom:6px;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:15px;color:var(--ink);min-height:44px;font-family:inherit}
+.q .opt.sel{border-color:var(--accent);background:#eff6ff}
+.q .opt.right{border-color:var(--ok);background:#ecfdf5}
+.q .opt.wrong{border-color:#f87171;background:#fef2f2}
+.q input.num{font-size:17px;padding:8px 10px;width:130px;border:2px solid var(--line);border-radius:8px}
+.q input.num.right{border-color:var(--ok);background:#ecfdf5}.q input.num.wrong{border-color:#f87171;background:#fef2f2}
+.fb{font-size:14.5px;margin-top:6px;padding:8px 10px;border-radius:8px}
+.fb.ok{color:#065f46;background:#ecfdf5}.fb.no{color:#991b1b;background:#fef2f2}
+.progress{position:sticky;top:64px;z-index:4;background:#fff;border-radius:12px;padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.12);margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.progress .bar{flex:1 1 160px;margin:0}
+.score{font-size:20px;font-weight:800}
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.navbtm{display:flex;justify-content:space-between;gap:8px;margin-top:6px}
+</style>
+</head>
+<body>
+<!-- ===== Impressum & Datenschutz (GitHub Pages) ===== -->
+<style>
+.legal-links{text-align:center;font-size:13.5px;color:var(--muted);padding:14px 10px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.legal-links button{border:0;background:none;color:var(--brand);font:inherit;font-weight:600;text-decoration:underline;padding:8px 6px;min-height:40px}
+#legal{position:fixed;inset:0;z-index:100;display:none;background:rgba(15,23,42,.55);padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));align-items:center;justify-content:center}
+#legal.open{display:flex}
+#legal .lg-box{background:var(--card);border-radius:16px;max-width:720px;width:100%;max-height:100%;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden}
+#legal .lg-head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--brand);color:#fff}
+#legal .lg-head .seg{flex:1}
+#legal .lg-head .seg .btn{color:var(--ink)}
+#legal .lg-x{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:20px;min-width:44px;min-height:44px;font-weight:700}
+#legal .lg-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 18px 20px;font-size:15px;line-height:1.5}
+#legal .lg-body h2{font-size:20px;margin:2px 0 10px}
+#legal .lg-body h3{font-size:16px;margin:16px 0 6px}
+#legal .lg-body p{margin:0 0 8px}
+#legal .lg-body ul{margin:0 0 8px;padding-left:22px}
+#legal .lg-body a{color:var(--accent);word-break:break-word}
+#legal .ph{background:#fef2f2;color:#991b1b;border:1px dashed #f87171;border-radius:6px;padding:0 5px;font-weight:600}
+</style>
+<div id="legal" role="dialog" aria-modal="true" aria-label="Impressum und Datenschutz">
+  <div class="lg-box">
+    <div class="lg-head">
+      <div class="seg"><button class="btn" data-lg="imp">Impressum</button><button class="btn" data-lg="ds">Datenschutz</button></div>
+      <button class="lg-x" data-lg="close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="lg-body" id="lgBody"></div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+/* ---- Angaben zur verantwortlichen Person: hier eintragen ---- */
+const ANBIETER={
+  name:"[Vorname Nachname]",
+  strasse:"[Straße Hausnummer]",
+  ort:"[PLZ Ort]",
+  email:"[E-Mail-Adresse]"
+};
+const STAND="November 2026";
+const v=k=>{const s=ANBIETER[k];return /^\[.*\]$/.test(s)?`<span class="ph">${s}</span>`:s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));};
+const adr=()=>`${v("name")}<br>${v("strasse")}<br>${v("ort")}<br>E-Mail: ${v("email")}`;
+const GH="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement";
+const T={
+imp:()=>`<h2>Impressum</h2>
+<h3>Angaben gemäß § 5 DDG</h3>
+<p>${adr()}</p>
+<h3>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h3>
+<p>${v("name")}, Anschrift wie oben</p>
+<h3>Zweck dieser Seite</h3>
+<p>Diese Seite ist ein nicht-kommerzielles Lernangebot für den Physikunterricht. Die Simulationen zeigen vereinfachte Modelle; die Messwerte sind Modellwerte und ersetzen kein reales Experiment.</p>
+<h3>Haftung für Links</h3>
+<p>Diese Seite enthält Links zu externen Websites Dritter, auf deren Inhalte ich keinen Einfluss habe. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich. Bei Bekanntwerden von Rechtsverletzungen werden entsprechende Links umgehend entfernt.</p>
+<h3>Urheberrecht</h3>
+<p>Texte, Grafiken und Programmcode dieser Seite wurden für den Unterricht erstellt. Eine Nutzung im eigenen Unterricht ist gern gesehen; für eine Veröffentlichung an anderer Stelle bitte vorher anfragen.</p>`,
+ds:()=>`<h2>Datenschutzerklärung</h2>
+<h3>1. Verantwortlicher</h3>
+<p>${adr()}</p>
+<h3>2. Das Wichtigste in Kürze</h3>
+<ul>
+<li>Es gibt keine Anmeldung, kein Benutzerkonto und kein Kontaktformular.</li>
+<li>Es werden <b>keine Cookies</b> gesetzt und <b>kein Tracking</b> oder Analysedienst verwendet.</li>
+<li>Es werden <b>keine externen Inhalte</b> nachgeladen (keine Web-Schriften, keine Skripte oder Bilder von fremden Servern). Die Seite besteht aus einer einzigen Datei.</li>
+<li>Deine Eingaben (Messtabellen, Antworten, Notizen) bleiben <b>nur auf deinem Gerät</b> und werden nicht übertragen.</li>
+</ul>
+<h3>3. Hosting durch GitHub Pages</h3>
+<p>Diese Seite wird über GitHub Pages bereitgestellt. Anbieter ist die GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf der Seite verarbeitet GitHub technisch notwendige Daten, insbesondere die <b>IP-Adresse</b>, Datum und Uhrzeit des Abrufs, die aufgerufene Datei sowie Angaben zu Browser und Betriebssystem. GitHub speichert diese Daten nach eigenen Angaben in Server-Logdateien, um die Sicherheit und Stabilität des Dienstes zu gewährleisten. Ich selbst habe keinen Zugriff auf diese Logdaten.</p>
+<p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Das berechtigte Interesse besteht in der sicheren und zuverlässigen Bereitstellung des Lernangebots.</p>
+<p>Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert; auf dieser Grundlage hat die EU-Kommission ein angemessenes Datenschutzniveau festgestellt (Art. 45 DSGVO). Weitere Informationen: <a href="${GH}" target="_blank" rel="noopener">Datenschutzerklärung von GitHub</a>.</p>
+<h3>4. Speicherung auf deinem Gerät (localStorage)</h3>
+<p>Damit deine Messwerte, Antworten und Notizen beim nächsten Öffnen noch da sind, speichert die Seite sie im lokalen Speicher deines Browsers (localStorage). Diese Daten verlassen dein Gerät nicht und werden weder an mich noch an GitHub gesendet. Die Speicherung ist für die von dir gewünschte Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).</p>
+<p>Du kannst die Daten jederzeit löschen: über die Lösch- bzw. Neustart-Funktion in dieser Seite oder indem du in den Einstellungen deines Browsers die Website-Daten löschst (auf dem iPad: Einstellungen › Apps › Safari › Erweitert › Website-Daten).</p>
+<h3>5. Externe Links</h3>
+<p>Wenn du einen Link zu einer anderen Website antippst (z. B. LEIFIphysik oder GitHub), gelten dort die Datenschutzbestimmungen des jeweiligen Anbieters.</p>
+<h3>6. Deine Rechte</h3>
+<p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Widerspruch gegen die Verarbeitung (Art. 21). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art. 77 DSGVO), zum Beispiel bei der Behörde deines Bundeslandes.</p>
+<p>Da ich selbst keine personenbezogenen Daten über dich speichere, wende dich für Daten aus den Server-Logs bitte direkt an GitHub.</p>
+<p class="small">Stand: ${STAND}</p>`
+};
+const box=document.getElementById("legal"),body=document.getElementById("lgBody");
+function show(which){
+  body.innerHTML=T[which]();body.scrollTop=0;
+  box.querySelectorAll(".seg .btn").forEach(b=>b.classList.toggle("on",b.dataset.lg===which));
+  box.classList.add("open");
+}
+function hide(){box.classList.remove("open");}
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("[data-lg]");if(!t)return;
+  const w=t.dataset.lg;
+  if(w==="close")hide();else if(T[w])show(w);
+});
+box.addEventListener("click",ev=>{if(ev.target===box)hide();});
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape")hide();});
+window.LEGAL_LINKS=`<div class="legal-links"><button data-lg="imp">Impressum</button> · <button data-lg="ds">Datenschutz</button></div>`;
+})();
+</script>
+<!-- ===== Ende Impressum & Datenschutz ===== -->
+<header>
+  <h1>⚡<span class="t"> Vom Elektroskop zum Stromkreis</span></h1>
+  <nav id="tabs"></nav>
+</header>
+<main id="main"></main>
+<footer class="legal-links"><button data-lg="imp">Impressum</button> · <button data-lg="ds">Datenschutz</button></footer>
+<script>
+"use strict";
+/* ---------- Speicher (nur dieses Gerät) ---------- */
+const LS={
+  get(k,d){try{const v=localStorage.getItem("grund."+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem("grund."+k,JSON.stringify(v));}catch(e){}},
+  clear(){try{Object.keys(localStorage).filter(k=>k.indexOf("grund.")===0).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+};
+const $=s=>document.querySelector(s);
+const fmt=(x,d=1)=>(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace(".",",");
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const parseNum=s=>parseFloat(String(s).replace(",",".").replace(/\s/g,""));
+
+/* ---------- Animationsschleife ---------- */
+let anim=null,lastT=0;
+function loop(t){const dt=Math.min(.05,(t-lastT)/1000||0);lastT=t;if(anim)anim(dt);requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+/* ---------- Zeichnen: Elektroskop (wie im Labor: Teller, Metallstab, Zeiger, Isolator, Gehäuse) ---------- */
+function eskopAngle(q){return 75*(1-Math.exp(-Math.abs(q)/4));}
+function eskop(cx,q,label,showCharges){
+  const th=eskopAngle(q)*Math.PI/180, py=190, L=58;
+  const dx=Math.sin(th)*L, dy=Math.cos(th)*L;
+  let s=`<g>`;
+  s+=`<circle cx="${cx}" cy="200" r="86" fill="#f8fafc" stroke="#94a3b8" stroke-width="7"/>`;
+  // Skala
+  for(let a=0;a<=80;a+=10){const r=a*Math.PI/180;s+=`<line x1="${cx+Math.sin(r)*68}" y1="${py-Math.cos(r)*68}" x2="${cx+Math.sin(r)*76}" y2="${py-Math.cos(r)*76}" stroke="#94a3b8" stroke-width="2"/>`;}
+  s+=`<rect x="${cx-11}" y="104" width="22" height="20" rx="3" fill="#b45309"/>`;
+  s+=`<line x1="${cx}" y1="58" x2="${cx}" y2="250" stroke="#64748b" stroke-width="7" stroke-linecap="round"/>`;
+  s+=`<rect x="${cx-48}" y="46" width="96" height="13" rx="4" fill="#94a3b8"/>`;
+  s+=`<line x1="${cx-dx}" y1="${py+dy}" x2="${cx+dx}" y2="${py-dy}" stroke="#1e293b" stroke-width="5" stroke-linecap="round"/>`;
+  s+=`<circle cx="${cx}" cy="${py}" r="5" fill="#fff" stroke="#1e293b" stroke-width="2"/>`;
+  if(showCharges&&Math.abs(q)>0.05){
+    const n=Math.min(30,Math.round(Math.abs(q)*2)), neg=q<0, col=neg?"#2563eb":"#dc2626", sym=neg?"−":"+";
+    const spots=[];
+    for(let i=0;i<n;i++){
+      const k=i%3;
+      if(k===0){spots.push([cx-40+((i*37)%80),52]);}
+      else if(k===1){spots.push([cx-12,70+((i*29)%160)]);}
+      else{const f=((i*0.37)%1)*0.9+0.1;spots.push([cx+dx*f+8,py-dy*f]);}
+    }
+    spots.forEach(p=>{s+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${col}"/><text x="${p[0]}" y="${p[1]+4.5}" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">${sym}</text>`;});
+  }
+  if(label)s+=`<text x="${cx}" y="305" text-anchor="middle" font-size="17" font-weight="700" fill="#0f2a4a">${label}</text>`;
+  return s+`</g>`;
+}
+
+/* ---------- Zeichnen: Stromkreis ---------- */
+/* Batterie links (Pluspol oben), Bauteil rechts, Steckplätze: oben (vor dem Bauteil), unten (dahinter), Zweig rechts (parallel zum Bauteil) */
+const P_MAIN=[[60,112],[60,40],[340,40],[340,220],[60,220],[60,148]];
+const P_SHUNT=[[60,112],[60,40],[340,40],[340,80],[420,80],[420,180],[340,180],[340,220],[60,220],[60,148]];
+function polyLen(p){let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return L;}
+function polyAt(p,s){for(let i=1;i<p.length;i++){const l=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);if(s<=l){const f=s/l;return[p[i-1][0]+(p[i][0]-p[i-1][0])*f,p[i-1][1]+(p[i][1]-p[i-1][1])*f];}s-=l;}return p[p.length-1];}
+function meterSVG(x,y,letter,val,alarm){
+  const col=letter==="A"?"#059669":"#ea580c";
+  let s=`<rect x="${x-22}" y="${y-22}" width="44" height="44" rx="22" fill="#fff" stroke="${alarm?"#dc2626":col}" stroke-width="4"/><text x="${x}" y="${y+7}" text-anchor="middle" font-size="21" font-weight="800" fill="${col}">${letter}</text>`;
+  const bx=x-46, by=x>400?190:y+(y>150?28:-56);
+  s+=`<rect x="${bx}" y="${by}" width="92" height="28" rx="6" fill="${alarm?"#dc2626":"#0f172a"}"/><text x="${x}" y="${by+20}" text-anchor="middle" font-size="16" font-weight="700" fill="#fff" font-family="Menlo,monospace">${val}</text>`;
+  return s;
+}
+/* cfg: {comp:'lamp'|'res', glow:0..1, amp:null|'top'|'bottom'|'shunt', volt:null|'par'|'series', aVal, vVal, alarm, flow:'main'|'shunt'|'none'} */
+function circuitSVG(cfg){
+  let s=`<svg viewBox="0 -32 470 312" role="img" aria-label="Stromkreis">`;
+  const W=`stroke="#334155" stroke-width="4" fill="none" stroke-linejoin="round"`;
+  // Leitungen Hauptkreis (mit Lücken für Messgeräte in Reihe)
+  const topGap=cfg.amp==="top"||cfg.volt==="series", botGap=cfg.amp==="bottom";
+  s+=`<polyline points="60,112 60,40 ${topGap?"178,40":"340,40"}" ${W}/>`;
+  if(topGap)s+=`<polyline points="222,40 340,40" ${W}/>`;
+  s+=`<polyline points="340,40 340,108" ${W}/><polyline points="340,152 340,220 ${botGap?"222,220":"60,220"}" ${W}/>`;
+  if(botGap)s+=`<polyline points="178,220 60,220" ${W}/>`;
+  s+=`<polyline points="60,220 60,148" ${W}/>`;
+  // Zweig rechts
+  if(cfg.amp==="shunt"||cfg.volt==="par"){s+=`<polyline points="340,80 420,80 420,108" ${W}/><polyline points="420,152 420,180 340,180" ${W}/><circle cx="340" cy="80" r="5" fill="#334155"/><circle cx="340" cy="180" r="5" fill="#334155"/>`;}
+  s+=`<g id="dots"></g>`;
+  // Batterie
+  s+=`<line x1="34" y1="112" x2="86" y2="112" stroke="#334155" stroke-width="4"/><line x1="46" y1="148" x2="74" y2="148" stroke="#334155" stroke-width="10"/>`;
+  s+=`<rect x="58" y="112" width="4" height="36" fill="#f4f7fb"/>`;
+  s+=`<text x="96" y="118" font-size="20" font-weight="800" fill="#dc2626">+</text><text x="96" y="156" font-size="22" font-weight="800" fill="#2563eb">−</text>`;
+  s+=`<text x="14" y="136" font-size="13" fill="#475569" font-weight="600">${cfg.bat||"6 V"}</text>`;
+  // Bauteil
+  if(cfg.comp==="res"){
+    s+=`<rect x="328" y="108" width="24" height="44" fill="#fff" stroke="#334155" stroke-width="4"/><text x="300" y="136" font-size="15" font-weight="700" fill="#334155" text-anchor="end">${cfg.compLabel||"R"}</text>`;
+    if(cfg.glow>0)s+=`<rect x="328" y="108" width="24" height="44" fill="rgba(234,88,12,${0.55*cfg.glow})"/>`;
+  }else{
+    const g=cfg.glow||0;
+    if(g>0)s+=`<circle cx="340" cy="130" r="${30+16*g}" fill="rgba(253,224,71,${0.25+0.45*g})"/>`;
+    s+=`<circle cx="340" cy="130" r="22" fill="${g>0?"#fef08a":"#fff"}" stroke="#334155" stroke-width="4"/><line x1="324" y1="114" x2="356" y2="146" stroke="#334155" stroke-width="3"/><line x1="356" y1="114" x2="324" y2="146" stroke="#334155" stroke-width="3"/>`;
+    s+=`<text x="306" y="136" font-size="14" font-weight="600" fill="#334155" text-anchor="end">Lampe</text>`;
+  }
+  // Messgeräte
+  if(cfg.amp==="top")s+=meterSVG(200,40,"A",cfg.aVal,cfg.alarm);
+  if(cfg.amp==="bottom")s+=meterSVG(200,220,"A",cfg.aVal,cfg.alarm);
+  if(cfg.amp==="shunt")s+=meterSVG(420,130,"A",cfg.aVal,cfg.alarm);
+  if(cfg.volt==="series")s+=meterSVG(200,40,"V",cfg.vVal,false);
+  if(cfg.volt==="par")s+=meterSVG(420,130,"V",cfg.vVal,false);
+  if(cfg.alarm)s+=`<text x="200" y="268" text-anchor="middle" font-size="20" font-weight="800" fill="#dc2626">⚠ KURZSCHLUSS</text>`;
+  return s+`</svg>`;
+}
+/* bewegte Ladungsträger auf einem Pfad */
+function makeFlow(svgSel,getState){
+  let off=0;
+  return dt=>{
+    const st=getState(), g=document.querySelector(svgSel+" #dots"); if(!g)return;
+    if(!st.path||st.speed<=0.01){g.innerHTML=st.path?drawDots(st.path,off,st.tech):"";return;}
+    off+=st.speed*dt;
+    g.innerHTML=drawDots(st.path,off,st.tech);
+  };
+}
+function drawDots(path,off,tech){
+  const L=polyLen(path), sp=30; let s="";
+  for(let d=0;d<L;d+=sp){
+    let pos=tech?((d+off)%L):(L-((d+off)%L)); if(pos<0)pos+=L;
+    const p=polyAt(path,pos);
+    if(tech)s+=`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="#dc2626" opacity=".85"/><text x="${p[0]}" y="${p[1]+4.5}" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">+</text>`;
+    else s+=`<circle cx="${p[0]}" cy="${p[1]}" r="6.5" fill="#2563eb"/><text x="${p[0]}" y="${p[1]+4.5}" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">−</text>`;
+  }
+  return s;
+}
+
+/* ---------- Stationen ---------- */
+const done=LS.get("done",{});
+function markDone(id){done[id]=true;LS.set("done",done);buildNav();}
+const STATIONS=[
+ {id:"start",tab:"Start",render:renderStart},
+ {id:"q",tab:"1 Ladung Q",render:renderQ},
+ {id:"i",tab:"2 Stromstärke I",render:renderI},
+ {id:"am",tab:"3 Amperemeter",render:renderAm},
+ {id:"u",tab:"4 Spannung U",render:renderU},
+ {id:"vm",tab:"5 Voltmeter",render:renderVm},
+ {id:"r",tab:"6 Widerstand R",render:renderR},
+ {id:"sum",tab:"Überblick",render:renderSum},
+ {id:"test",tab:"Selbsttest",render:renderTest}
+];
+let cur=LS.get("cur","start");
+function buildNav(){
+  $("#tabs").innerHTML=STATIONS.map(s=>`<button data-id="${s.id}" class="${s.id===cur?"on":""}">${s.tab}${done[s.id]?'<span class="ck">✓</span>':""}</button>`).join("");
+  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.id));
+}
+function go(id){cur=id;LS.set("cur",id);anim=null;buildNav();const st=STATIONS.find(s=>s.id===id)||STATIONS[0];st.render();window.scrollTo(0,0);
+  const b=$("#tabs button.on");if(b&&b.scrollIntoView)b.scrollIntoView({inline:"center",block:"nearest"});}
+function navBottom(id){const i=STATIONS.findIndex(s=>s.id===id);const p=STATIONS[i-1],n=STATIONS[i+1];
+  return `<div class="navbtm">${p?`<button class="btn" onclick="go('${p.id}')">← ${p.tab}</button>`:"<span></span>"}${n?`<button class="btn primary" onclick="markDone('${id}');go('${n.id}')">Weiter: ${n.tab} →</button>`:""}</div>`;}
+function think(q,a){return `<details><summary>${q}</summary><p style="margin:6px 0 0">${a}</p></details>`;}
+
+/* ===== Start ===== */
+function renderStart(){
+  $("#main").innerHTML=`
+  <h2>Vom Elektroskop zum Stromkreis</h2>
+  <p class="lead">Im Elektroskop-Labor hast du mit <b>ruhenden</b> Ladungen experimentiert (Elektrostatik). Auf LEIFI hast du die elektrischen Grundgrößen kennengelernt. Hier verbindest du beides: Für jede Grundgröße gehst du den Weg von deinem Statikexperiment bis zum Messgerät im Stromkreis.</p>
+  <div class="card"><h3>Der Weg in fünf Schritten</h3>
+   <div class="chain">
+    <div class="st go" onclick="go('q')"><span class="tag">Ladung Q</span><br><b>Ladungsportionen zählen</b><br><span class="small">aus V6 Neutral und V7 Menge</span></div>
+    <div class="st go" onclick="go('i')"><span class="tag">Stromstärke I</span><br><b>Ladung fließt</b><br><span class="small">aus V3 Kontakt</span></div>
+    <div class="st go" onclick="go('am')"><span class="tag">Amperemeter</span><br><b>Wo zählt man fließende Ladung?</b><br><span class="small">Stromkreis</span></div>
+    <div class="st go" onclick="go('u')"><span class="tag v">Spannung U</span><br><b>Getrennte Ladung will zurück</b><br><span class="small">aus V1, V4, V5 und V8</span></div>
+    <div class="st go" onclick="go('vm')"><span class="tag v">Voltmeter</span><br><b>Das Elektroskop als Vorbild</b><br><span class="small">Stromkreis</span></div>
+    <div class="st go" onclick="go('r')"><span class="tag">Widerstand R</span><br><b>Leiter und Isolatoren</b><br><span class="small">aus V3 Kontakt</span></div>
+   </div>
+  </div>
+  <div class="card real"><h3>So arbeitest du</h3>
+   <ul class="tight">
+    <li>Arbeite die Stationen der Reihe nach ab. Oben in der Leiste siehst du, wo du bist.</li>
+    <li>In jeder Station gibt es ein <b>Experiment zum Ausprobieren</b> und <b>Denkfragen</b>. Überlege zuerst selbst, bevor du die Antwort aufklappst.</li>
+    <li>Am Ende steht ein <b>Selbsttest</b>. Die Lösungen siehst du erst, wenn du alle Fragen beantwortet hast.</li>
+   </ul>
+   <div class="btns"><button class="btn primary" onclick="markDone('start');go('q')">Los geht's →</button><button class="btn danger" id="reset">Alles zurücksetzen</button></div>
+  </div>`;
+  $("#reset").onclick=()=>{if(confirmReset()){LS.clear();for(const k in done)delete done[k];testState=null;go("start");}};
+}
+let resetArmed=0;
+function confirmReset(){const b=$("#reset");if(Date.now()-resetArmed<4000)return true;resetArmed=Date.now();b.textContent="Wirklich? Nochmal tippen";setTimeout(()=>{if(b.isConnected)b.textContent="Alles zurücksetzen";},4000);return false;}
+
+/* ===== 1 Ladung ===== */
+function renderQ(){
+  let q=LS.get("q.q",0);
+  $("#main").innerHTML=`
+  <h2>1 · Die elektrische Ladung Q</h2>
+  <p class="lead">Ladung kann man nicht sehen. Aber man kann sie <b>zählen</b>, wenn man sie in gleich großen Portionen überträgt, so wie mit dem Ladungslöffel in V7.</p>
+  <div class="grid2">
+   <div class="card"><div class="stage"><svg id="qsvg" viewBox="0 0 300 320"></svg></div>
+    <div class="btns"><button class="btn" id="qneg">− Portion (Elektronenüberschuss)</button><button class="btn" id="qpos">+ Portion (Elektronenmangel)</button><button class="btn danger" id="qerd">Erden</button></div>
+    <div class="msg" id="qmsg"></div>
+   </div>
+   <div>
+    <div class="card real"><h3>Erinnerung an das Labor</h3>
+     <p style="margin:0">In <b>V7</b> hast du Portion für Portion Ladung auf das Elektroskop gebracht: Je mehr Ladung, desto größer der Ausschlag. In <b>V6</b> hast du gesehen: Gleich viel positive und negative Ladung heben sich auf. Probiere beides links aus.</p></div>
+    <div class="card"><h3>Ladung zählen</h3>
+     <div class="kv"><span>Ladung auf dem Elektroskop</span><b id="qval"></b></div>
+     <div class="kv"><span>Das sind ungefähr</span><b id="qel"></b></div>
+     <p class="small" style="margin:6px 0 0">Annahme: Eine Portion vom Ladungslöffel ist etwa 1 nC (1 Nanocoulomb, ein Milliardstel Coulomb).</p>
+    </div>
+   </div>
+  </div>
+  <div class="card model"><h3>Vom Zählen zur physikalischen Größe</h3>
+   <ul class="tight">
+    <li>Die Ladung ist eine <b>Menge</b>, die man zählen kann. Ihr Formelzeichen ist <b>Q</b>.</li>
+    <li>Die kleinste Portion, die es gibt, ist die Ladung eines Elektrons, die <b>Elementarladung</b> e ≈ 1,6 · 10<sup>−19</sup> C. Jede Ladung ist ein Vielfaches davon.</li>
+    <li>Die Einheit ist <b>1 Coulomb (1 C)</b>. 1 C sind etwa 6,2 Trillionen (6,2 · 10<sup>18</sup>) Elektronen, viel mehr als auf dein Elektroskop passt.</li>
+    <li>Wie du gleich siehst, gilt 1 C = 1 A · s (Amperesekunde). Darum steht auf Akkus oft „mAh“: 3000 mAh sind 3 A · 3600 s = 10 800 C.</li>
+   </ul>
+   <div class="formula">Q = N · e</div>
+   <p class="small" style="margin:0">N: Anzahl der überschüssigen (oder fehlenden) Elektronen, e: Elementarladung</p>
+  </div>
+  <div class="card"><h3>Denkfragen</h3>
+   ${think("Ein Körper hat 3 Portionen „+“ und 3 Portionen „−“ bekommen. Welche Ladung zeigt das Elektroskop an?","Keine: Er ist <b>neutral</b>. Neutral heißt nicht „ohne Ladung“, sondern „gleich viele positive und negative Ladungen“ (V6). Das ist wichtig für den Stromkreis: Ein Draht, durch den Strom fließt, ist trotzdem neutral.")}
+   ${think("Warum braucht man für eine Größe eine Einheit wie das Coulomb?","„Ausschlag in Skalenteilen“ hängt vom Elektroskop ab. Mit einer festen Einheit kann man Ladungen überall vergleichen, genau wie man Längen in Metern angibt.")}
+  </div>
+  ${navBottom("q")}`;
+  function draw(){
+    $("#qsvg").innerHTML=eskop(150,q,"",true);
+    const n=Math.round(q);
+    $("#qval").textContent=(n===0?"0":(n>0?"+":"−")+Math.abs(n))+" Portionen ≈ "+(n===0?"0":(n>0?"+":"−")+Math.abs(n))+" nC";
+    $("#qel").textContent=n===0?"keine überschüssigen Elektronen":fmt(Math.abs(n)*6.24,1).replace(",0","")+" Milliarden Elektronen "+(n<0?"zu viel":"zu wenig");
+    let m;
+    if(n===0)m="Neutral: gleich viele positive und negative Ladungen, kein Ausschlag.";
+    else m=`Ausschlag ${Math.round(eskopAngle(q))}°. Je mehr Portionen, desto größer der Ausschlag.`;
+    $("#qmsg").textContent=m;LS.set("q.q",q);
+  }
+  $("#qneg").onclick=()=>{q=clamp(q-1,-12,12);draw();};
+  $("#qpos").onclick=()=>{q=clamp(q+1,-12,12);draw();};
+  $("#qerd").onclick=()=>{q=0;draw();};
+  draw();
+}
+
+/* ===== 2 Stromstärke ===== */
+function renderI(){
+  const MATS={metall:{n:"Metalldraht",k:2.2,c:"#64748b",t:"Leiter"},holz:{n:"Holzstab",k:0.12,c:"#a16207",t:"schlechter Leiter"},kunst:{n:"Kunststoffstab",k:0,c:"#e5e7eb",t:"Isolator"}};
+  let mat="metall", qa=8, qb=0, conn=false, flowNow=0, total=0, dotsOff=0;
+  // Zählfläche
+  let v=60, thick=false, count=0, timing=false, tLeft=0, cOff=0, lastRes=null;
+  $("#main").innerHTML=`
+  <h2>2 · Die elektrische Stromstärke I</h2>
+  <p class="lead">Bisher lag die Ladung still auf dem Elektroskop. Was passiert, wenn sie sich <b>bewegen</b> kann?</p>
+  <div class="card real"><h3>Erinnerung an V3 Kontakt</h3><p style="margin:0">Du hast ein geladenes Elektroskop mit einem ungeladenen verbunden. Die Ladung hat sich auf beide verteilt, über einen Leiter, aber nicht über einen Isolator.</p></div>
+  <div class="grid2">
+   <div class="card"><h3>Versuch A: Zwei Elektroskope verbinden</h3>
+    <div class="stage"><svg id="isvg" viewBox="0 0 600 320"></svg></div>
+    <div class="lbl-s">Verbindung aus …</div>
+    <div class="seg" id="imat">${Object.keys(MATS).map(k=>`<button class="btn ${k===mat?"on":""}" data-k="${k}">${MATS[k].n}</button>`).join("")}</div>
+    <div class="btns"><button class="btn primary" id="iconn">Verbinden</button><button class="btn" id="iload">Links neu laden</button></div>
+   </div>
+   <div class="card"><h3>Was du beobachtest</h3>
+    <div class="kv"><span>Ladung links</span><b id="iqa"></b></div><div class="bar"><i id="iqab"></i></div>
+    <div class="kv"><span>Ladung rechts</span><b id="iqb"></b></div><div class="bar"><i id="iqbb"></i></div>
+    <div class="kv"><span>Gerade fließt pro Sekunde</span><b id="iflow"></b></div><div class="bar"><i id="iflowb" style="background:#059669"></i></div>
+    <div class="msg" id="imsg">Tippe auf „Verbinden“.</div>
+    ${think("Was ändert sich, wenn du Holz statt Metall nimmst?","Es fließt <b>insgesamt dieselbe Ladung</b>, aber viel <b>langsamer</b>: In jeder Sekunde fließt weniger Ladung. Genau diesen Unterschied beschreibt die Stromstärke.")}
+    ${think("Warum hört der Strom nach kurzer Zeit auf?","Sobald beide Elektroskope gleich geladen sind, gibt es keinen Grund mehr, dass Ladung fließt. Für einen <b>dauerhaften</b> Strom braucht man etwas, das die Ladung immer wieder zurückpumpt: eine Batterie oder ein Netzgerät.")}
+   </div>
+  </div>
+  <div class="grid2">
+   <div class="card"><h3>Versuch B: Ladung pro Zeit zählen</h3>
+    <p class="small" style="margin:0 0 6px">Eine Batterie hält den Strom aufrecht. Wie „stark“ ist er? Stell dir eine Zählfläche quer durch den Draht vor und zähle, wie viele Portionen in einer bestimmten Zeit hindurchgehen.</p>
+    <div class="stage"><svg id="zsvg" viewBox="0 0 600 170"></svg></div>
+    <div class="lbl-s">Geschwindigkeit der Ladungen</div><input type="range" id="zv" min="10" max="140" value="${v}">
+    <div class="btns"><div class="seg" id="zth"><button class="btn on" data-t="0">dünner Draht</button><button class="btn" data-t="1">dicker Draht</button></div><button class="btn primary" id="zgo">5 Sekunden zählen</button></div>
+    <div class="msg" id="zmsg">Tippe auf „5 Sekunden zählen“.</div>
+   </div>
+   <div class="card model"><h3>Die Stromstärke als Größe</h3>
+    <p style="margin:0 0 6px">Die <b>Stromstärke I</b> gibt an, wie viel Ladung Q in der Zeit t durch einen Leiterquerschnitt fließt.</p>
+    <div class="formula">I = Q / t</div>
+    <ul class="tight">
+     <li>Einheit: <b>1 Ampere (1 A)</b>. 1 A heißt: In jeder Sekunde fließt 1 C durch den Querschnitt. Daher 1 C = 1 A · s.</li>
+     <li>Mehr Ladungsträger oder schnellere Ladungsträger bedeuten eine größere Stromstärke.</li>
+     <li><b>Richtung:</b> In Metallen bewegen sich die Elektronen vom Minuspol zum Pluspol. Die <b>technische Stromrichtung</b> wurde früher festgelegt und zeigt vom Plus- zum Minuspol.</li>
+    </ul>
+    <div class="lbl-s">Rechne selbst</div>
+    <div class="calc">Q = <input id="cq" inputmode="decimal" value="6"> C &nbsp; t = <input id="ct" inputmode="decimal" value="3"> s &nbsp;⇒&nbsp; I = <b id="ci"></b></div>
+   </div>
+  </div>
+  <div class="card"><h3>Denkfrage</h3>
+   ${think("Wird die Ladung in der Lampe „verbraucht“?","Nein. Die Ladung fließt im Kreis und kommt vollständig zur Batterie zurück, so wie die Gesamtladung in V3 und V6 erhalten blieb. Die Lampe nutzt die <b>Energie</b>, die die Ladung mitbringt, nicht die Ladung selbst.")}
+  </div>
+  ${navBottom("i")}`;
+  const svg=$("#isvg"), zsvg=$("#zsvg");
+  function drawA(){
+    const m=MATS[mat];
+    let s=eskop(150,-qa,"links",true)+eskop(450,-qb,"rechts",true);
+    if(conn){
+      s+=`<rect x="198" y="42" width="204" height="18" rx="6" fill="${m.c}" stroke="#475569" stroke-width="2"/>`;
+      s+=`<text x="300" y="34" text-anchor="middle" font-size="15" fill="#334155" font-weight="600">${m.n} (${m.t})</text>`;
+      if(flowNow>0.02){for(let x=0;x<200;x+=34){const px=200+((x+dotsOff)%200);s+=`<circle cx="${px}" cy="51" r="6" fill="#2563eb"/><text x="${px}" y="55.5" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">−</text>`;}}
+    }else s+=`<text x="300" y="34" text-anchor="middle" font-size="15" fill="#94a3b8">nicht verbunden</text>`;
+    svg.innerHTML=s;
+    $("#iqa").textContent=fmt(qa,1)+" Portionen";$("#iqb").textContent=fmt(qb,1)+" Portionen";
+    $("#iqab").style.width=(qa/8*100)+"%";$("#iqbb").style.width=(qb/8*100)+"%";
+    $("#iflow").textContent=fmt(flowNow,2)+" Portionen/s";$("#iflowb").style.width=clamp(flowNow/8*100,0,100)+"%";
+  }
+  function drawB(dt){
+    const L=560,sp=42, rows=thick?[60,85,110]:[85];
+    let s=`<rect x="20" y="${thick?42:68}" width="560" height="${thick?86:34}" rx="${thick?20:14}" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>`;
+    s+=`<line x1="300" y1="20" x2="300" y2="150" stroke="#059669" stroke-width="4" stroke-dasharray="8 6"/><text x="300" y="166" font-size="14" text-anchor="middle" fill="#059669" font-weight="700">Zählfläche</text>`;
+    const prev=cOff; cOff+=v*dt;
+    rows.forEach((y,ri)=>{for(let k=0;k*sp<L;k++){const x0=k*sp+ri*14;const x=20+((x0+cOff)%L);s+=`<circle cx="${x}" cy="${y}" r="7" fill="#2563eb"/><text x="${x}" y="${y+4.5}" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">−</text>`;
+      if(timing){const a=(x0+prev)%L,b=(x0+cOff)%L, line=280; // überquert x=300 (Pfadkoordinate 280)
+        if((a<line&&b>=line)||(b<a&&(a<line||b>=line)))count++;}}});
+    s+=`<text x="40" y="24" font-size="15" fill="#334155" font-weight="700">${timing?`⏱ ${fmt(tLeft,1)} s · gezählt: ${count}`:(lastRes?`gezählt: ${lastRes.c} Portionen in 5 s`:"")}</text>`;
+    zsvg.innerHTML=s;
+    if(timing){tLeft-=dt;if(tLeft<=0){timing=false;lastRes={c:count};
+      $("#zmsg").innerHTML=`In 5 s sind <b>${count} Portionen</b> durch die Zählfläche geflossen: I = ${count} Portionen / 5 s = <b>${fmt(count/5,1)} Portionen pro Sekunde</b>. Ändere die Geschwindigkeit oder die Drahtdicke und zähle noch einmal.`;$("#zgo").disabled=false;}}
+  }
+  anim=dt=>{
+    if(conn){const k=MATS[mat].k;const f=k*(qa-qb)/2*dt;qa-=f;qb+=f;total+=f;flowNow=f/dt;if(Math.abs(qa-qb)<0.02){flowNow=0;}dotsOff+=clamp(flowNow,0,8)*40*dt;}else flowNow=0;
+    drawA();
+    let m;
+    if(!conn)m="Tippe auf „Verbinden“.";
+    else if(MATS[mat].k===0)m="Kunststoff ist ein Isolator: Es fließt keine Ladung, die Ausschläge bleiben gleich.";
+    else if(flowNow>0.02)m="Ladung fließt von links nach rechts: Das ist ein elektrischer Strom.";
+    else m="Beide sind jetzt gleich geladen. Der Strom ist vorbei. Insgesamt sind "+fmt(total,1)+" Portionen geflossen.";
+    $("#imsg").textContent=m;
+    drawB(dt);
+  };
+  $("#imat").querySelectorAll("button").forEach(b=>b.onclick=()=>{mat=b.dataset.k;$("#imat").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));});
+  $("#iconn").onclick=()=>{conn=!conn;$("#iconn").textContent=conn?"Trennen":"Verbinden";};
+  $("#iload").onclick=()=>{qa=8;qb=0;total=0;conn=false;$("#iconn").textContent="Verbinden";};
+  $("#zv").oninput=e=>{v=+e.target.value;};
+  $("#zth").querySelectorAll("button").forEach(b=>b.onclick=()=>{thick=b.dataset.t==="1";$("#zth").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));});
+  $("#zgo").onclick=()=>{timing=true;tLeft=5;count=0;$("#zgo").disabled=true;$("#zmsg").textContent="Zähle …";};
+  const calc=()=>{const Q=parseNum($("#cq").value),t=parseNum($("#ct").value);$("#ci").textContent=(isFinite(Q)&&isFinite(t)&&t>0)?fmt(Q/t,2)+" A":"–";};
+  $("#cq").oninput=calc;$("#ct").oninput=calc;calc();
+}
+
+/* ===== 3 Amperemeter ===== */
+function renderAm(){
+  let pos=LS.get("am.pos","none"), tech=false;
+  $("#main").innerHTML=`
+  <h2>3 · Wie baut man ein Amperemeter ein?</h2>
+  <p class="lead">Ein Amperemeter misst die Stromstärke. Wo muss es sitzen? Leite es aus dem Modell ab und prüfe es dann am Stromkreis.</p>
+  <div class="card model"><h3>Ableitung aus dem Modell</h3>
+   <ol style="margin:0;padding-left:22px">
+    <li>Stromstärke heißt: <b>Ladung pro Zeit durch einen Querschnitt</b> (Versuch B, Zählfläche).</li>
+    <li>Das Amperemeter muss also selbst die Zählfläche sein. <b>Alle</b> Ladungen, die durch die Lampe fließen, müssen auch durch das Messgerät.</li>
+    <li>Dafür muss man den Stromkreis <b>auftrennen</b> und das Messgerät in die Lücke setzen: Es liegt <b>in Reihe</b> zur Lampe.</li>
+    <li>Das Messgerät soll den Strom nicht bremsen. Ein Amperemeter muss darum <b>fast keinen Widerstand</b> haben, es ist ein sehr guter Leiter.</li>
+   </ol>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="stage" id="amst"></div>
+    <div class="lbl-s">Amperemeter einbauen</div>
+    <div class="seg" id="ampos">
+     <button class="btn" data-p="none">ohne</button><button class="btn" data-p="top">in Reihe, vor der Lampe</button><button class="btn" data-p="bottom">in Reihe, hinter der Lampe</button><button class="btn" data-p="shunt">parallel zur Lampe</button>
+    </div>
+    <div class="lbl-s">Darstellung</div>
+    <div class="seg" id="amdir"><button class="btn on" data-t="0">Elektronen (− → +)</button><button class="btn" data-t="1">technische Stromrichtung (+ → −)</button></div>
+   </div>
+   <div class="card"><h3>Beobachtung</h3><div class="msg" id="ammsg"></div>
+    ${think("Warum zeigen „vor der Lampe“ und „hinter der Lampe“ dasselbe an?","Die Ladung wird in der Lampe nicht verbraucht (Ladungserhaltung, V3 und V6). Was hineinfließt, fließt auch wieder hinaus. In einem unverzweigten Stromkreis ist die Stromstärke <b>überall gleich</b>.")}
+    ${think("Was passiert, wenn man das Amperemeter parallel zur Lampe anschließt?","Das Amperemeter ist ein sehr guter Leiter. Fast alle Ladung nimmt diesen bequemen Umweg, an der Lampe vorbei. Die Lampe geht aus, der Strom wird riesig: ein <b>Kurzschluss</b>. Das Messgerät oder die Sicherung kann dabei kaputtgehen.")}
+    <div class="merk"><b>Merke:</b> Das Amperemeter wird <b>in Reihe</b> zu dem Bauteil geschaltet, durch das der Strom gemessen werden soll. Es hat einen sehr kleinen Widerstand und darf <b>nie</b> parallel zu einem Bauteil oder direkt an die Batterie angeschlossen werden.</div>
+   </div>
+  </div>
+  ${navBottom("am")}`;
+  const TXT={
+    none:["Die Lampe leuchtet. Wie groß ist die Stromstärke? Baue ein Amperemeter ein.",""],
+    top:["Das Amperemeter zeigt 0,20 A. Die Lampe leuchtet genauso hell wie ohne Messgerät. Alle Ladungen fließen durch das Messgerät.","good"],
+    bottom:["Auch hinter der Lampe zeigt das Amperemeter 0,20 A. Die Stromstärke ist überall im Kreis gleich.","good"],
+    shunt:["Die Lampe ist aus! Die Ladung fließt fast vollständig durch das gut leitende Amperemeter an der Lampe vorbei. Der Strom ist viel zu groß: Kurzschluss.","bad"]
+  };
+  function draw(){
+    const cfg={comp:"lamp",glow:pos==="shunt"?0:1,amp:pos==="none"?null:pos,aVal:pos==="shunt"?"> 10 A !":"0,20 A",alarm:pos==="shunt"};
+    $("#amst").innerHTML=circuitSVG(cfg);
+    $("#ammsg").textContent=TXT[pos][0];$("#ammsg").className="msg "+TXT[pos][1];
+    $("#ampos").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.p===pos));
+    LS.set("am.pos",pos);
+  }
+  $("#ampos").querySelectorAll("button").forEach(b=>b.onclick=()=>{pos=b.dataset.p;draw();});
+  $("#amdir").querySelectorAll("button").forEach(b=>b.onclick=()=>{tech=b.dataset.t==="1";$("#amdir").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));});
+  draw();
+  anim=makeFlow("#amst",()=>({path:pos==="shunt"?P_SHUNT:P_MAIN,speed:pos==="shunt"?320:45,tech}));
+}
+
+/* ===== 4 Spannung ===== */
+function renderU(){
+  let s=0, E=0, flash=0, back=null;
+  const MAX=10;
+  $("#main").innerHTML=`
+  <h2>4 · Die elektrische Spannung U</h2>
+  <p class="lead">Ein Strom fließt nicht von allein. Im Versuch A floss er nur, solange das eine Elektroskop stärker geladen war als das andere. Was treibt die Ladung an?</p>
+  <div class="card real"><h3>Erinnerung an das Labor</h3>
+   <ul class="tight" style="margin:0">
+    <li><b>V1/V5:</b> Beim Reiben werden positive und negative Ladungen <b>getrennt</b>. Dafür musst du Arbeit verrichten.</li>
+    <li><b>V4/V5:</b> Getrennte, ungleichnamige Ladungen <b>ziehen sich an</b>. Sie „wollen“ wieder zusammen.</li>
+    <li><b>V8:</b> Die elektrische Kraft hängt vom Abstand ab: Je näher, desto stärker.</li>
+   </ul></div>
+  <div class="grid2">
+   <div class="card"><h3>Versuch C: Ladungen trennen</h3>
+    <div class="stage"><svg id="usvg" viewBox="0 0 600 300"></svg></div>
+    <div class="btns"><button class="btn primary" id="usep">Ein Elektron nach rechts bringen</button><button class="btn" id="uglow">Mit Glimmlampe verbinden</button></div>
+    <div class="msg" id="umsg">Bringe Elektronen von der linken auf die rechte Platte.</div>
+   </div>
+   <div class="card"><h3>Messwerte</h3>
+    <div class="kv"><span>Getrennte Elektronen</span><b id="us"></b></div>
+    <div class="kv"><span>Arbeit für das letzte Elektron</span><b id="ue1"></b></div><div class="bar"><i id="ue1b" style="background:#ea580c"></i></div>
+    <div class="kv"><span>Gespeicherte Energie insgesamt</span><b id="ue"></b></div><div class="bar"><i id="ueb" style="background:#7c3aed"></i></div>
+    <p class="small" style="margin:4px 0 0">Energie in gedachten Einheiten</p>
+    ${think("Warum wird es immer schwerer, noch ein Elektron hinüberzubringen?","Die rechte Platte ist schon negativ, sie stößt das neue Elektron ab. Die linke ist positiv, sie hält es fest (V5: gleichnamig stößt ab, ungleichnamig zieht an). Je mehr schon getrennt ist, desto mehr Arbeit kostet jedes weitere Elektron.")}
+    ${think("Warum leuchtet die Glimmlampe heller, wenn mehr getrennt war?","Auf dem Rückweg gibt jede Ladung die Energie ab, die vorher beim Trennen hineingesteckt wurde. Je stärker getrennt war, desto mehr Energie bringt <b>jede einzelne Ladung</b> mit. Genau das misst die Spannung.")}
+   </div>
+  </div>
+  <div class="card model"><h3>Die Spannung als Größe</h3>
+   <p style="margin:0 0 6px">Die <b>Spannung U</b> beschreibt, wie stark die Ladungen in einer Quelle getrennt sind. Sie ist der <b>Antrieb</b> für den Strom. Genauer: Sie gibt an, wie viel Energie E jede Ladung Q auf ihrem Weg durch den Stromkreis abgeben kann.</p>
+   <div class="formula">U = E / Q</div>
+   <ul class="tight">
+    <li>Einheit: <b>1 Volt (1 V)</b>. 1 V heißt: Jedes Coulomb Ladung kann 1 Joule Energie abgeben. 1 V = 1 J / C.</li>
+    <li>Eine Batterie ist eine <b>Ladungspumpe</b>: Chemische Vorgänge trennen die Ladungen immer wieder, so bleibt die Spannung erhalten.</li>
+    <li>Eine Spannung gibt es auch, wenn <b>kein</b> Strom fließt, so wie die getrennten Ladungen auf den Platten.</li>
+    <li>Wasser-Modell: Die Spannung entspricht einem <b>Höhenunterschied</b>. Die Batterie ist eine Pumpe, die Wasser nach oben pumpt. Wasser fließt nur, wenn es einen Höhenunterschied gibt.</li>
+   </ul>
+   <p class="small" style="margin:0">Typische Werte: Batterie 1,5 V oder 4,5 V · Akku im Handy etwa 3,7 V · Steckdose 230 V · Blitz mehrere Millionen V.</p>
+  </div>
+  <div class="card"><h3>Denkfrage</h3>
+   ${think("Spannung bezieht sich immer auf zwei Punkte. Warum?","Spannung heißt: Auf der einen Seite sind die Ladungen anders verteilt als auf der anderen. Man vergleicht immer zwei Stellen, wie beim Höhenunterschied zwischen zwei Orten. Darum spricht man von der Spannung „zwischen“ zwei Punkten.")}
+  </div>
+  ${navBottom("u")}`;
+  const svg=$("#usvg");
+  function draw(){
+    if(!svg.isConnected)return;
+    let t="";
+    const g=flash;
+    t+=`<rect x="110" y="40" width="22" height="200" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/><rect x="468" y="40" width="22" height="200" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="3"/>`;
+    t+=`<text x="121" y="268" text-anchor="middle" font-size="15" font-weight="700" fill="#dc2626">${s>0?"positiv":"neutral"}</text><text x="479" y="268" text-anchor="middle" font-size="15" font-weight="700" fill="#2563eb">${s>0?"negativ":"neutral"}</text>`;
+    // Ladungen: 10 Paare, die getrennten zeigen sich
+    for(let i=0;i<MAX;i++){const y=55+i*18.5;
+      t+=`<circle cx="121" cy="${y}" r="7" fill="#dc2626"/><text x="121" y="${y+4.5}" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">+</text>`;
+      const away=i<s;
+      if(!away){t+=`<circle cx="143" cy="${y}" r="7" fill="#2563eb"/><text x="143" y="${y+4.5}" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">−</text>`;}
+      else{t+=`<circle cx="457" cy="${y}" r="7" fill="#2563eb"/><text x="457" y="${y+4.5}" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">−</text>`;}
+      t+=`<circle cx="479" cy="${y}" r="7" fill="#dc2626"/><text x="479" y="${y+4.5}" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">+</text>`;
+    }
+    // Anziehung
+    if(s>0){const w=2+s*1.2;t+=`<line x1="170" y1="140" x2="430" y2="140" stroke="#7c3aed" stroke-width="${w}" stroke-dasharray="10 8" opacity=".6"/><text x="300" y="128" text-anchor="middle" font-size="15" font-weight="700" fill="#7c3aed">Anziehung</text>`;}
+    // Glimmlampe
+    if(back!==null){
+      t+=`<polyline points="121,40 121,14 280,14" fill="none" stroke="#334155" stroke-width="3"/><polyline points="320,14 479,14 479,40" fill="none" stroke="#334155" stroke-width="3"/>`;
+      t+=`<ellipse cx="300" cy="14" rx="22" ry="11" fill="${g>0.02?`rgba(251,146,60,${0.3+0.7*g})`:"#f1f5f9"}" stroke="#334155" stroke-width="2.5"/>`;
+      if(g>0.02)t+=`<circle cx="300" cy="14" r="${14+30*g}" fill="rgba(251,146,60,${0.35*g})"/>`;
+    }
+    // Höhenmodell
+    t+=`<g transform="translate(250,175)"><rect x="0" y="0" width="100" height="80" fill="none"/>
+      <rect x="0" y="${80-(40+s*3.5)}" width="38" height="${40+s*3.5}" fill="#93c5fd"/><rect x="62" y="${80-(40-s*3.5)}" width="38" height="${40-s*3.5}" fill="#93c5fd"/>
+      <rect x="0" y="0" width="38" height="80" fill="none" stroke="#64748b" stroke-width="2"/><rect x="62" y="0" width="38" height="80" fill="none" stroke="#64748b" stroke-width="2"/>
+      <text x="50" y="98" font-size="12" text-anchor="middle" fill="#475569">Wasser-Modell</text></g>`;
+    svg.innerHTML=t;
+    const e1=s;
+    $("#us").textContent=s+" von "+MAX;
+    $("#ue1").textContent=e1+" Einheiten";$("#ue1b").style.width=(e1/MAX*100)+"%";
+    $("#ue").textContent=E+" Einheiten";$("#ueb").style.width=(E/55*100)+"%";
+  }
+  $("#usep").onclick=()=>{if(back!==null)return;if(s>=MAX){$("#umsg").textContent="Mehr geht hier nicht: Die Anziehung ist zu stark.";return;}s++;E+=s;
+    $("#umsg").textContent=s===1?"Das erste Elektron war leicht. Bring noch weitere hinüber.":`Für das ${s}. Elektron brauchtest du ${s} Einheiten Arbeit. Es wird immer schwerer!`;draw();};
+  $("#uglow").onclick=()=>{if(s===0){$("#umsg").textContent="Es sind keine Ladungen getrennt: Die Glimmlampe bleibt dunkel. Ohne Spannung kein Strom.";back=0;flash=0;draw();setTimeout(()=>{back=null;draw();},1200);return;}
+    const s0=s;back=s0;flash=s0/MAX;$("#umsg").textContent=`Die Glimmlampe blitzt auf. Bei ${s0} getrennten Elektronen ist der Blitz ${s0>6?"hell":s0>3?"mittel":"schwach"}. Die gespeicherte Energie wird frei, die Platten sind wieder neutral.`;
+    $("#usep").disabled=true;$("#uglow").disabled=true;
+    const tick=()=>{if(!svg.isConnected)return;if(s>0){s--;draw();setTimeout(tick,90);}else{E=0;setTimeout(()=>{if(!svg.isConnected)return;back=null;flash=0;draw();$("#usep").disabled=false;$("#uglow").disabled=false;},400);}};tick();};
+  anim=dt=>{if(back!==null&&flash>0&&s===0){flash=Math.max(0,flash-dt*1.5);draw();}};
+  draw();
+}
+
+/* ===== 5 Voltmeter ===== */
+function renderVm(){
+  let pos=LS.get("vm.pos","none");
+  $("#main").innerHTML=`
+  <h2>5 · Wie baut man ein Voltmeter ein?</h2>
+  <p class="lead">Ein Voltmeter misst die Spannung. Dein Elektroskop war eigentlich schon ein kleiner Spannungsmesser. Was kannst du daraus ableiten?</p>
+  <div class="grid2">
+   <div class="card"><h3>Das Elektroskop als Vorbild</h3><div class="stage"><svg viewBox="0 0 300 320">${eskop(150,-6,"",true)}
+     <text x="150" y="22" text-anchor="middle" font-size="14" font-weight="700" fill="#0f2a4a">Anschluss 1: Teller</text>
+     <text x="150" y="308" text-anchor="middle" font-size="14" font-weight="700" fill="#0f2a4a">Anschluss 2: Gehäuse / Erde</text>
+     <text x="14" y="92" font-size="13" fill="#b45309" font-weight="700">Isolator</text><line x1="50" y1="98" x2="137" y2="113" stroke="#b45309" stroke-width="2"/></svg></div></div>
+   <div class="card model"><h3>Ableitung aus dem Modell</h3>
+    <ol style="margin:0;padding-left:22px">
+     <li>Spannung gibt es immer <b>zwischen zwei Punkten</b>. Auch das Elektroskop hat zwei Anschlüsse: den Teller und das Gehäuse. Erdest du das Gehäuse nicht, misst es den Unterschied zwischen beiden.</li>
+     <li>Ein Voltmeter braucht also zwei Anschlüsse, die man an die <b>beiden Enden</b> des Bauteils hält. Der Stromkreis bleibt dabei geschlossen. Das Voltmeter liegt <b>parallel</b> zum Bauteil.</li>
+     <li>Das Elektroskop nimmt nur winzig wenig Ladung auf, der Isolator trennt es vom Gehäuse. So verändert es die gemessene Spannung kaum. Ein Voltmeter muss darum einen <b>sehr großen Widerstand</b> haben. Es soll fast keinen Strom abzweigen.</li>
+    </ol>
+   </div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="stage" id="vmst"></div>
+    <div class="lbl-s">Voltmeter einbauen</div>
+    <div class="seg" id="vmpos"><button class="btn" data-p="none">ohne</button><button class="btn" data-p="par">parallel zur Lampe</button><button class="btn" data-p="series">in Reihe</button></div>
+   </div>
+   <div class="card"><h3>Beobachtung</h3><div class="msg" id="vmmsg"></div>
+    ${think("Warum geht die Lampe aus, wenn das Voltmeter in Reihe sitzt?","Das Voltmeter hat einen riesigen Widerstand, es wirkt fast wie ein Isolator (Kunststoffstab in Versuch A). Es fließt praktisch kein Strom mehr. Das Voltmeter zeigt dann ungefähr die ganze Batteriespannung, aber nicht die Spannung an der Lampe.")}
+    ${think("Vergleiche: Amperemeter und Voltmeter","Amperemeter: <b>in Reihe</b>, sehr <b>kleiner</b> Widerstand, alle Ladung muss hindurch.<br>Voltmeter: <b>parallel</b>, sehr <b>großer</b> Widerstand, vergleicht zwei Punkte und lässt fast keine Ladung durch.")}
+    <div class="merk"><b>Merke:</b> Das Voltmeter wird <b>parallel</b> zu dem Bauteil geschaltet, an dem die Spannung gemessen werden soll. Es hat einen sehr großen Widerstand, damit es den Stromkreis kaum beeinflusst.</div>
+   </div>
+  </div>
+  ${navBottom("vm")}`;
+  const TXT={
+    none:["Die Lampe leuchtet. Welche Spannung liegt an ihr? Baue ein Voltmeter ein.",""],
+    par:["Das Voltmeter zeigt 6,0 V an der Lampe. Die Lampe leuchtet weiter wie vorher, durch das Voltmeter fließt fast nichts.","good"],
+    series:["Die Lampe ist aus! Das Voltmeter lässt kaum Ladung durch. Es zeigt etwa 6,0 V, die ganze Batteriespannung, weil es selbst die Lücke im Kreis bildet.","bad"]
+  };
+  function draw(){
+    $("#vmst").innerHTML=circuitSVG({comp:"lamp",glow:pos==="series"?0:1,volt:pos==="none"?null:pos,vVal:"6,0 V"});
+    $("#vmmsg").textContent=TXT[pos][0];$("#vmmsg").className="msg "+TXT[pos][1];
+    $("#vmpos").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.p===pos));LS.set("vm.pos",pos);
+  }
+  $("#vmpos").querySelectorAll("button").forEach(b=>b.onclick=()=>{pos=b.dataset.p;draw();});
+  draw();
+  anim=makeFlow("#vmst",()=>({path:P_MAIN,speed:pos==="series"?0:45,tech:false}));
+}
+
+/* ===== 6 Widerstand ===== */
+function renderR(){
+  const COMP={a:{n:"Konstantandraht, 1 m",R:20},b:{n:"Konstantandraht, 2 m",R:40},c:{n:"Kunststoffstab",R:Infinity}};
+  let comp=LS.get("r.comp","a"), U=6, rows=LS.get("r.rows",[]);
+  $("#main").innerHTML=`
+  <h2>6 · Der elektrische Widerstand R</h2>
+  <p class="lead">In Versuch A floss die Ladung über Metall schnell, über Holz langsam und über Kunststoff gar nicht. Wie kann man diese „Hemmung“ messen?</p>
+  <div class="grid2">
+   <div class="card"><div class="stage" id="rst"></div>
+    <div class="lbl-s">Bauteil</div>
+    <div class="seg" id="rcomp">${Object.keys(COMP).map(k=>`<button class="btn" data-k="${k}">${COMP[k].n}</button>`).join("")}</div>
+    <div class="lbl-s">Spannung der Quelle: <b id="ruv"></b></div><input type="range" id="ru" min="0" max="12" step="1" value="${U}">
+    <div class="btns"><button class="btn primary" id="radd">Messwert in die Tabelle</button><button class="btn danger" id="rclr">Tabelle leeren</button></div>
+   </div>
+   <div class="card"><h3>Messtabelle</h3>
+    <p class="small" style="margin:0">Das Amperemeter sitzt in Reihe, das Voltmeter parallel zum Bauteil, so wie du es abgeleitet hast.</p>
+    <div id="rtab"></div>
+    <div class="msg" id="rmsg">Miss bei mehreren Spannungen und vergleiche die letzte Spalte.</div>
+   </div>
+  </div>
+  <div class="card model"><h3>Der Widerstand als Größe</h3>
+   <p style="margin:0 0 6px">Je größer die Spannung (der Antrieb), desto größer die Stromstärke. Wie viel Spannung man für eine bestimmte Stromstärke braucht, hängt vom Bauteil ab. Das beschreibt der <b>Widerstand R</b>:</p>
+   <div class="formula">R = U / I</div>
+   <ul class="tight">
+    <li>Einheit: <b>1 Ohm (1 Ω)</b>. 1 Ω = 1 V / A. Ein Bauteil hat 1 Ω, wenn bei 1 V ein Strom von 1 A fließt.</li>
+    <li>Leiter haben einen kleinen Widerstand, Isolatoren einen riesigen.</li>
+    <li>Bei vielen Metalldrähten ist U / I konstant (Ohmsches Gesetz). Ein längerer Draht hat einen größeren Widerstand.</li>
+   </ul>
+  </div>
+  <div class="card"><h3>Denkfrage</h3>
+   ${think("Jetzt wird klar, warum Messgeräte so gebaut sind. Erkläre!","Ein <b>Amperemeter</b> liegt in Reihe. Es soll den Strom nicht verkleinern, also braucht es einen <b>kleinen</b> Widerstand. Ein <b>Voltmeter</b> liegt parallel. Es soll keinen Strom abzweigen, also braucht es einen <b>großen</b> Widerstand.")}
+  </div>
+  ${navBottom("r")}`;
+  const I=()=>COMP[comp].R===Infinity?0:U/COMP[comp].R;
+  function draw(){
+    const i=I();
+    $("#rst").innerHTML=circuitSVG({comp:"res",compLabel:"Bauteil",glow:Math.min(1,i/0.6),amp:"bottom",volt:"par",aVal:fmt(i,2)+" A",vVal:fmt(U,1)+" V",bat:fmt(U,0)+" V"});
+    $("#ruv").textContent=U+" V";
+    $("#rcomp").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.k===comp));
+    let h=`<table><tr><th>Bauteil</th><th>U in V</th><th>I in A</th><th>U / I in Ω</th></tr>`;
+    rows.forEach(r=>{h+=`<tr><td>${r.c}</td><td>${fmt(r.u,1)}</td><td>${fmt(r.i,2)}</td><td>${r.i>0?fmt(r.u/r.i,0):(r.u>0?"sehr groß":"–")}</td></tr>`;});
+    if(!rows.length)h+=`<tr><td colspan="4" class="small">noch keine Messwerte</td></tr>`;
+    $("#rtab").innerHTML=h+"</table>";
+    LS.set("r.rows",rows);LS.set("r.comp",comp);
+  }
+  $("#rcomp").querySelectorAll("button").forEach(b=>b.onclick=()=>{comp=b.dataset.k;draw();});
+  $("#ru").oninput=e=>{U=+e.target.value;draw();};
+  $("#radd").onclick=()=>{rows.push({c:COMP[comp].n.replace("Konstantandraht","Draht"),u:U,i:I()});if(rows.length>14)rows.shift();draw();
+    const same=rows.filter(r=>r.c===rows[rows.length-1].c&&r.i>0);
+    $("#rmsg").textContent=COMP[comp].R===Infinity?"Kunststoff: Trotz Spannung fließt kein Strom. Der Widerstand ist riesig, ein Isolator.":same.length>=2?`Bei diesem Draht ist U / I immer ${COMP[comp].R} Ω, egal welche Spannung. Das ist sein Widerstand.`:"Miss noch bei einer anderen Spannung.";};
+  $("#rclr").onclick=()=>{rows=[];draw();};
+  draw();
+  anim=makeFlow("#rst",()=>({path:P_MAIN,speed:I()*90,tech:false}));
+}
+
+/* ===== Überblick ===== */
+function renderSum(){
+  $("#main").innerHTML=`
+  <h2>Überblick: Die Grundgrößen</h2>
+  <p class="lead">Fasse zuerst selbst zusammen, was du herausgefunden hast. Vergleiche dann mit der Tabelle.</p>
+  <div class="card"><details><summary>Tabelle aufdecken</summary>
+   <div style="overflow-x:auto"><table>
+    <tr><th>Größe</th><th>Was sie bedeutet</th><th>Woher wir sie kennen</th><th>Einheit</th><th>Messgerät</th></tr>
+    <tr><td><b>Ladung Q</b></td><td>Menge der überschüssigen oder fehlenden Elektronen</td><td>V6, V7: Ladungsportionen, Ausschlag</td><td>1 C = 1 A·s</td><td>(Elektroskop zeigt sie an)</td></tr>
+    <tr><td><b>Stromstärke I</b></td><td>Ladung pro Zeit durch einen Querschnitt, I = Q / t</td><td>V3: Ladung fließt über einen Leiter</td><td>1 A = 1 C / s</td><td>Amperemeter, <b>in Reihe</b>, kleiner Widerstand</td></tr>
+    <tr><td><b>Spannung U</b></td><td>Antrieb durch Ladungstrennung, Energie pro Ladung, U = E / Q</td><td>V1, V4, V5, V8: Trennen und Anziehung</td><td>1 V = 1 J / C</td><td>Voltmeter, <b>parallel</b>, großer Widerstand</td></tr>
+    <tr><td><b>Widerstand R</b></td><td>Hemmung des Stroms, R = U / I</td><td>V3: Leiter und Isolatoren</td><td>1 Ω = 1 V / A</td><td>aus U und I berechnet</td></tr>
+   </table></div></details></div>
+  <div class="card"><h3>Schreibe in eigenen Worten</h3>
+   <p class="small" style="margin:0 0 6px">Erkläre einer Mitschülerin oder einem Mitschüler, warum das Amperemeter in Reihe und das Voltmeter parallel geschaltet wird. (Wird nur auf diesem Gerät gespeichert.)</p>
+   <textarea id="note" style="width:100%;min-height:110px;font-size:15px;border:2px solid var(--line);border-radius:10px;padding:8px;font-family:inherit"></textarea>
+  </div>
+  ${navBottom("sum")}`;
+  const n=$("#note");n.value=LS.get("note","");n.oninput=()=>LS.set("note",n.value);
+}
+
+/* ===== Selbsttest ===== */
+const TEST=[
+ {t:"mc",q:"Was bedeutet es, wenn ein Elektroskop keinen Ausschlag zeigt?",o:["Es enthält überhaupt keine Ladungen.","Es enthält gleich viele positive und negative Ladungen.","Es enthält nur positive Ladungen."],c:1,
+  ex:"Neutral heißt: gleich viele positive und negative Ladungen. Ladungen sind immer da, sie heben sich nur in ihrer Wirkung auf (V6)."},
+ {t:"mc",q:"In welcher Einheit gibt man die elektrische Ladung an?",o:["Volt (V)","Ampere (A)","Coulomb (C), also Amperesekunde (A·s)","Ohm (Ω)"],c:2,
+  ex:"Die Ladung Q wird in Coulomb gemessen. Wegen I = Q / t gilt 1 C = 1 A · s."},
+ {t:"mc",q:"Ein geladenes und ein ungeladenes Elektroskop werden mit einem Metalldraht verbunden. Was passiert?",o:["Nichts, Ladung kann nicht wandern.","Ladung fließt, bis beide gleich geladen sind. Für kurze Zeit fließt ein Strom.","Es fließt dauerhaft ein Strom.","Die Ladung verschwindet im Draht."],c:1,
+  ex:"Über den Leiter gleicht sich die Ladung aus (V3). Das ist ein kurzer Strom. Für einen dauerhaften Strom braucht man eine Quelle, die die Ladungen immer wieder trennt."},
+ {t:"num",q:"In 4 s fließen 2 C Ladung durch einen Draht. Wie groß ist die Stromstärke? (in A)",a:0.5,tol:0.01,u:"A",
+  ex:"I = Q / t = 2 C / 4 s = 0,5 A"},
+ {t:"mc",q:"Warum muss ein Amperemeter in Reihe geschaltet werden?",o:["Weil es die Spannung zwischen zwei Punkten vergleicht.","Weil alle Ladungen, die durch das Bauteil fließen, auch durch das Messgerät fließen müssen.","Weil es sonst zu wenig Energie bekommt.","Weil es einen sehr großen Widerstand hat."],c:1,
+  ex:"Die Stromstärke ist die Ladung pro Zeit durch einen Querschnitt. Das Amperemeter muss selbst dieser Querschnitt sein, also im Kreis in Reihe liegen."},
+ {t:"mc",q:"Ein Amperemeter wird versehentlich parallel zu einer Lampe angeschlossen. Was passiert?",o:["Es zeigt die richtige Stromstärke an.","Die Lampe leuchtet heller.","Kurzschluss: Die Lampe geht aus, ein sehr großer Strom fließt durch das Messgerät.","Es zeigt 0 A an, sonst passiert nichts."],c:2,
+  ex:"Das Amperemeter hat einen sehr kleinen Widerstand. Fast die ganze Ladung fließt an der Lampe vorbei durch das Messgerät, ein Kurzschluss."},
+ {t:"mc",q:"Ein Amperemeter vor der Lampe zeigt 0,3 A. Was zeigt ein zweites Amperemeter hinter der Lampe?",o:["weniger als 0,3 A, weil die Lampe Strom verbraucht","genau 0,3 A","mehr als 0,3 A","0 A"],c:1,
+  ex:"Ladung wird nicht verbraucht (Ladungserhaltung). Im unverzweigten Stromkreis ist die Stromstärke überall gleich."},
+ {t:"mc",q:"Was beschreibt die Spannung im Modell?",o:["Wie viele Elektronen in einem Draht sind.","Wie stark Ladungen getrennt sind, also den Antrieb für den Strom (Energie pro Ladung).","Wie schnell die Elektronen sind.","Wie dick ein Draht ist."],c:1,
+  ex:"Beim Trennen verrichtet man Arbeit, die getrennten Ladungen ziehen sich an. Die Spannung gibt an, wie viel Energie jede Ladung auf dem Rückweg abgeben kann: U = E / Q."},
+ {t:"mc",q:"Wie und warum schaltet man ein Voltmeter?",o:["In Reihe, weil alle Ladungen hindurch müssen.","Parallel zum Bauteil, weil es die beiden Enden vergleicht. Es hat einen großen Widerstand, damit fast kein Strom abgezweigt wird.","Parallel, weil es einen sehr kleinen Widerstand hat.","Es ist egal, wie man es anschließt."],c:1,
+  ex:"Spannung gibt es zwischen zwei Punkten, wie beim Elektroskop zwischen Teller und Gehäuse. Darum parallel, mit sehr großem Widerstand."},
+ {t:"mc",q:"Ein Voltmeter wird in Reihe zur Lampe geschaltet. Was beobachtet man?",o:["Die Lampe leuchtet normal und das Voltmeter zeigt die Lampenspannung.","Die Lampe geht aus, weil das Voltmeter mit seinem großen Widerstand fast keinen Strom durchlässt.","Es gibt einen Kurzschluss.","Das Voltmeter zeigt 0 V."],c:1,
+  ex:"Der große Widerstand des Voltmeters wirkt wie ein Isolator. Es fließt fast kein Strom, die Lampe bleibt dunkel. Das Voltmeter zeigt etwa die Batteriespannung."},
+ {t:"num",q:"An einem Draht liegt eine Spannung von 12 V. Es fließt ein Strom von 0,4 A. Wie groß ist der Widerstand? (in Ω)",a:30,tol:0.2,u:"Ω",
+  ex:"R = U / I = 12 V / 0,4 A = 30 Ω"},
+ {t:"mc",q:"In welche Richtung bewegen sich die Elektronen in einem Metalldraht?",o:["Vom Pluspol zum Minuspol","Vom Minuspol zum Pluspol","Sie bewegen sich gar nicht.","Mal so, mal so"],c:1,
+  ex:"Elektronen sind negativ und werden vom Minuspol abgestoßen und vom Pluspol angezogen. Die technische Stromrichtung (+ → −) wurde festgelegt, bevor man die Elektronen kannte."}
+];
+let testState=null;
+function renderTest(){
+  if(!testState)testState=LS.get("test",{a:{},done:false});
+  const st=testState, save=()=>LS.set("test",st);
+  const mkPerm=()=>TEST.map(q=>{if(q.t!=="mc")return null;const a=q.o.map((_,j)=>j);for(let k=a.length-1;k>0;k--){const r=Math.floor(Math.random()*(k+1));[a[k],a[r]]=[a[r],a[k]];}return a;});
+  if(!st.perm||st.perm.length!==TEST.length){st.perm=mkPerm();save();}
+  const answered=()=>TEST.filter((q,i)=>st.a[i]!==undefined&&st.a[i]!=="").length;
+  const isRight=(q,i)=>q.t==="mc"?st.a[i]===q.c:Math.abs(parseNum(st.a[i])-q.a)<=q.tol;
+  function render(){
+    let h=`<h2>Selbsttest</h2><p class="lead">Beantworte alle ${TEST.length} Fragen. Erst dann kannst du dein Ergebnis und die Lösungen ansehen.</p>`;
+    const n=answered();
+    if(st.done){const sc=TEST.filter((q,i)=>isRight(q,i)).length;
+      h+=`<div class="progress"><span class="score">${sc} von ${TEST.length} richtig</span><span>${sc===TEST.length?"Hervorragend!":sc>=TEST.length*0.75?"Gut gemacht!":sc>=TEST.length/2?"Schon ordentlich. Schau dir die Erklärungen an.":"Arbeite die Stationen noch einmal durch."}</span><button class="btn" id="tnew">Test neu starten</button></div>`;}
+    else h+=`<div class="progress"><span><b>${n}</b> von ${TEST.length} beantwortet</span><div class="bar"><i style="width:${n/TEST.length*100}%"></i></div><button class="btn primary" id="teval" ${n<TEST.length?"disabled":""}>Auswerten und Lösungen zeigen</button></div>`;
+    h+=`<div class="card">`;
+    TEST.forEach((q,i)=>{
+      h+=`<div class="q"><p class="qt">${i+1}. ${q.q}</p>`;
+      if(q.t==="mc"){st.perm[i].forEach(j=>{const o=q.o[j];let c="opt";if(st.done){if(j===q.c)c+=" right";else if(st.a[i]===j)c+=" wrong";}else if(st.a[i]===j)c+=" sel";
+        h+=`<button class="${c}" data-q="${i}" data-o="${j}" ${st.done?"disabled":""}>${o}</button>`;});}
+      else{const v=st.a[i]!==undefined?String(st.a[i]).replace(/"/g,""):"";h+=`<input class="num ${st.done?(isRight(q,i)?"right":"wrong"):""}" data-q="${i}" inputmode="decimal" placeholder="Zahl" value="${v}" ${st.done?"disabled":""}> ${q.u}`;}
+      if(st.done){const r=isRight(q,i);h+=`<div class="fb ${r?"ok":"no"}">${r?"✓ Richtig.":"✗ Leider falsch."} ${q.t==="num"&&!r?"Richtig ist "+fmt(q.a,q.a%1?1:0)+" "+q.u+". ":""}${q.ex}</div>`;}
+      h+=`</div>`;
+    });
+    h+=`</div>`;
+    if(!st.done)h+=`<p class="small">Du kannst deine Antworten bis zum Auswerten noch ändern.</p>`;
+    $("#main").innerHTML=h;
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{st.a[+b.dataset.q]=+b.dataset.o;save();const y=window.scrollY;render();window.scrollTo(0,y);});
+    document.querySelectorAll("input.num").forEach(inp=>inp.oninput=()=>{const v=inp.value.trim();if(v===""||!isFinite(parseNum(v)))delete st.a[+inp.dataset.q];else st.a[+inp.dataset.q]=v;save();
+      const k=answered();const pr=document.querySelector(".progress");if(pr){pr.querySelector("b").textContent=k;pr.querySelector(".bar i").style.width=(k/TEST.length*100)+"%";pr.querySelector("#teval").disabled=k<TEST.length;}});
+    const ev=$("#teval");if(ev)ev.onclick=()=>{if(answered()<TEST.length)return;st.done=true;save();markDone("test");render();window.scrollTo(0,0);};
+    const nw=$("#tnew");if(nw)nw.onclick=()=>{st.a={};st.done=false;st.perm=mkPerm();save();render();window.scrollTo(0,0);};
+  }
+  render();
+}
+
+window.go=go;window.markDone=markDone;
+buildNav();go(STATIONS.some(s=>s.id===cur)?cur:"start");
+</script>
+</body>
+</html>

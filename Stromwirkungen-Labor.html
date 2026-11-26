@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Stromwirkungen-Labor</title>
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f172a;--muted:#475569;--line:#d8dee8;--brand:#0f2a4a;--accent:#2563eb;--pos:#dc2626;--neg:#2563eb;--ok:#059669;--warn:#d97706;--el:#7c3aed;--hh:60px;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.45}
+header{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;display:flex;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+header h1{font-size:17px;margin:0;white-space:nowrap;font-weight:700}
+nav{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;border:0;border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;min-height:40px}
+nav button.on{background:#fff;color:var(--brand)}
+.switch{flex:0 0 auto;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600;min-height:40px}
+.switch.on{background:#fde68a;color:#111;border-color:#fde68a}
+main{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:12px;padding:12px;height:calc(100vh - var(--hh));height:calc(100dvh - var(--hh))}
+#stage{position:relative;background:#f4f7fb;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);min-height:300px}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#ov{position:absolute;top:10px;right:10px;max-width:min(330px,46%);pointer-events:none}
+#ov .box{background:rgba(255,255,255,.93);border-radius:12px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.15);font-size:14px}
+#ov .bar{height:14px;border-radius:7px;margin:2px 0 8px}
+#viewbar{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center}
+#viewbar button{border:0;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.92);box-shadow:0 1px 3px rgba(0,0,0,.15);min-height:38px;color:var(--ink)}
+#viewbar span{font-size:12px;color:var(--muted);background:rgba(255,255,255,.8);padding:4px 8px;border-radius:8px}
+#panel{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px}
+#nogl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;font-weight:600}
+@media (orientation:portrait),(max-width:900px){
+  header h1 .t{display:none}
+  main{display:block;height:auto;padding:10px}
+  #stage{position:sticky;top:var(--hh);z-index:5;margin-bottom:10px;height:50vh}
+  #panel{overflow:visible}
+  #viewbar span{display:none}
+}
+h2{font-size:21px;margin:4px 0 6px}
+h3{font-size:16px;margin:0 0 8px;color:var(--brand)}
+.lead{margin:0 0 10px;color:var(--muted)}
+.card{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card.real{border-left:5px solid var(--warn)}
+ol.steps{margin:0;padding-left:22px}
+ol.steps li{margin-bottom:6px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.btn{border:0;border-radius:10px;padding:10px 13px;font-size:15px;font-weight:600;background:#e2e8f0;color:var(--ink);min-height:44px}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.on{background:#fde68a;box-shadow:inset 0 0 0 2px var(--warn)}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.btn:active{transform:scale(.97)}
+.seg{display:inline-flex;flex-wrap:wrap;background:#e2e8f0;border-radius:10px;padding:3px;gap:3px}
+.seg .btn{background:transparent;min-height:38px;padding:8px 12px}
+.seg .btn.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lbl-s{font-size:13px;color:var(--muted);margin:6px 0 4px;font-weight:600}
+.msg{min-height:24px;font-size:15px;color:var(--brand);font-weight:600;padding:6px 10px;border-radius:8px;background:#eff6ff;margin-top:4px}
+input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:6px}
+th,td{border:1px solid var(--line);padding:6px;text-align:center}
+th{background:#f1f5f9;font-weight:600}
+td input{width:100%;border:0;font-size:14.5px;padding:4px;background:#fffbeb;border-radius:4px}
+td .x{border:0;background:none;color:#b91c1c;font-size:18px;padding:2px 6px}
+.chart{width:100%;height:auto;margin-top:8px}
+.q{margin-bottom:12px}
+.q p{margin:0 0 6px;font-weight:600}
+.q .opt{display:block;width:100%;text-align:left;margin-bottom:6px;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:15px;color:var(--ink);min-height:44px}
+.q .opt.right{border-color:var(--ok);background:#ecfdf5}
+.q .opt.wrong{border-color:#f87171;background:#fef2f2}
+.fb{font-size:14.5px;margin-top:4px}
+.fb.ok{color:#065f46}.fb.no{color:#991b1b}
+.jd{font-size:16px;line-height:2.4}
+.jd select{font-size:16px;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:#fff;color:var(--ink);max-width:100%}
+details{background:#f8fafc;border-radius:10px;padding:8px 12px;margin-top:6px}
+summary{font-weight:700;color:var(--brand);padding:4px 0;cursor:pointer}
+.merk{background:#fef9c3;border-radius:10px;padding:10px 12px;margin-top:8px;border-left:5px solid #eab308}
+textarea{width:100%;min-height:90px;font-size:15px;border:2px solid var(--line);border-radius:10px;padding:8px;font-family:inherit}
+.small{font-size:13.5px;color:var(--muted)}
+.legend{display:inline-flex;gap:12px;font-size:14px;align-items:center;flex-wrap:wrap}
+.dot{display:inline-block;width:16px;height:16px;border-radius:50%;color:#fff;text-align:center;line-height:16px;font-weight:700;font-size:13px;vertical-align:middle}
+#ov .row{display:flex;justify-content:space-between;gap:16px;white-space:nowrap}
+#ov .row .k{color:var(--muted)}
+#ov .row .v{font-weight:700;font-variant-numeric:tabular-nums}
+#ov .box b.h{display:block;color:var(--brand);font-size:13px;margin-bottom:2px}
+#ov:empty{display:none}
+@media (orientation:portrait),(max-width:900px){
+  body.model #stage{height:66vh}
+  #ov{max-width:52%}
+  #ov .box{font-size:13px;padding:7px 9px}
+}
+.btn:disabled{opacity:.45}
+input[type=range]:disabled{opacity:.4}
+.myst input{font-size:17px;width:120px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;margin-right:6px}
+.card.model{border-left:5px solid var(--el)}
+.card.myst{border-left:5px solid var(--ok)}
+.tips{margin:4px 0 8px;padding-left:20px;color:var(--muted);font-size:14.5px}
+.axis{margin-top:8px}
+.prompt{font-size:14px;color:var(--muted);margin:2px 0 0}
+.cl{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.leg{font-size:13px;color:var(--muted);margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 14px}
+.ov-tbl td,.ov-tbl th{font-size:13.5px;text-align:left}
+</style>
+</head>
+<body>
+<!-- ===== Impressum & Datenschutz (GitHub Pages) ===== -->
+<style>
+.legal-links{text-align:center;font-size:13.5px;color:var(--muted);padding:14px 10px 18px;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.legal-links button{border:0;background:none;color:var(--brand);font:inherit;font-weight:600;text-decoration:underline;padding:8px 6px;min-height:40px}
+#legal{position:fixed;inset:0;z-index:100;display:none;background:rgba(15,23,42,.55);padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom));align-items:center;justify-content:center}
+#legal.open{display:flex}
+#legal .lg-box{background:var(--card);border-radius:16px;max-width:720px;width:100%;max-height:100%;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.3);overflow:hidden}
+#legal .lg-head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--brand);color:#fff}
+#legal .lg-head .seg{flex:1}
+#legal .lg-head .seg .btn{color:var(--ink)}
+#legal .lg-x{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:20px;min-width:44px;min-height:44px;font-weight:700}
+#legal .lg-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 18px 20px;font-size:15px;line-height:1.5}
+#legal .lg-body h2{font-size:20px;margin:2px 0 10px}
+#legal .lg-body h3{font-size:16px;margin:16px 0 6px}
+#legal .lg-body p{margin:0 0 8px}
+#legal .lg-body ul{margin:0 0 8px;padding-left:22px}
+#legal .lg-body a{color:var(--accent);word-break:break-word}
+#legal .ph{background:#fef2f2;color:#991b1b;border:1px dashed #f87171;border-radius:6px;padding:0 5px;font-weight:600}
+</style>
+<div id="legal" role="dialog" aria-modal="true" aria-label="Impressum und Datenschutz">
+  <div class="lg-box">
+    <div class="lg-head">
+      <div class="seg"><button class="btn" data-lg="imp">Impressum</button><button class="btn" data-lg="ds">Datenschutz</button></div>
+      <button class="lg-x" data-lg="close" aria-label="Schließen">✕</button>
+    </div>
+    <div class="lg-body" id="lgBody"></div>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+/* ---- Angaben zur verantwortlichen Person: hier eintragen ---- */
+const ANBIETER={
+  name:"[Vorname Nachname]",
+  strasse:"[Straße Hausnummer]",
+  ort:"[PLZ Ort]",
+  email:"[E-Mail-Adresse]"
+};
+const STAND="November 2026";
+const v=k=>{const s=ANBIETER[k];return /^\[.*\]$/.test(s)?`<span class="ph">${s}</span>`:s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));};
+const adr=()=>`${v("name")}<br>${v("strasse")}<br>${v("ort")}<br>E-Mail: ${v("email")}`;
+const GH="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement";
+const T={
+imp:()=>`<h2>Impressum</h2>
+<h3>Angaben gemäß § 5 DDG</h3>
+<p>${adr()}</p>
+<h3>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h3>
+<p>${v("name")}, Anschrift wie oben</p>
+<h3>Zweck dieser Seite</h3>
+<p>Diese Seite ist ein nicht-kommerzielles Lernangebot für den Physikunterricht. Die Simulationen zeigen vereinfachte Modelle; die Messwerte sind Modellwerte und ersetzen kein reales Experiment.</p>
+<h3>Haftung für Links</h3>
+<p>Diese Seite enthält Links zu externen Websites Dritter, auf deren Inhalte ich keinen Einfluss habe. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich. Bei Bekanntwerden von Rechtsverletzungen werden entsprechende Links umgehend entfernt.</p>
+<h3>Urheberrecht</h3>
+<p>Texte, Grafiken und Programmcode dieser Seite wurden für den Unterricht erstellt. Eine Nutzung im eigenen Unterricht ist gern gesehen; für eine Veröffentlichung an anderer Stelle bitte vorher anfragen.</p>`,
+ds:()=>`<h2>Datenschutzerklärung</h2>
+<h3>1. Verantwortlicher</h3>
+<p>${adr()}</p>
+<h3>2. Das Wichtigste in Kürze</h3>
+<ul>
+<li>Es gibt keine Anmeldung, kein Benutzerkonto und kein Kontaktformular.</li>
+<li>Es werden <b>keine Cookies</b> gesetzt und <b>kein Tracking</b> oder Analysedienst verwendet.</li>
+<li>Es werden <b>keine externen Inhalte</b> nachgeladen (keine Web-Schriften, keine Skripte oder Bilder von fremden Servern). Die Seite besteht aus einer einzigen Datei.</li>
+<li>Deine Eingaben (Messtabellen, Antworten, Notizen) bleiben <b>nur auf deinem Gerät</b> und werden nicht übertragen.</li>
+</ul>
+<h3>3. Hosting durch GitHub Pages</h3>
+<p>Diese Seite wird über GitHub Pages bereitgestellt. Anbieter ist die GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf der Seite verarbeitet GitHub technisch notwendige Daten, insbesondere die <b>IP-Adresse</b>, Datum und Uhrzeit des Abrufs, die aufgerufene Datei sowie Angaben zu Browser und Betriebssystem. GitHub speichert diese Daten nach eigenen Angaben in Server-Logdateien, um die Sicherheit und Stabilität des Dienstes zu gewährleisten. Ich selbst habe keinen Zugriff auf diese Logdaten.</p>
+<p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Das berechtigte Interesse besteht in der sicheren und zuverlässigen Bereitstellung des Lernangebots.</p>
+<p>Dabei können Daten in die USA übermittelt werden. GitHub ist nach dem EU-U.S. Data Privacy Framework zertifiziert; auf dieser Grundlage hat die EU-Kommission ein angemessenes Datenschutzniveau festgestellt (Art. 45 DSGVO). Weitere Informationen: <a href="${GH}" target="_blank" rel="noopener">Datenschutzerklärung von GitHub</a>.</p>
+<h3>4. Speicherung auf deinem Gerät (localStorage)</h3>
+<p>Damit deine Messwerte, Antworten und Notizen beim nächsten Öffnen noch da sind, speichert die Seite sie im lokalen Speicher deines Browsers (localStorage). Diese Daten verlassen dein Gerät nicht und werden weder an mich noch an GitHub gesendet. Die Speicherung ist für die von dir gewünschte Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).</p>
+<p>Du kannst die Daten jederzeit löschen: über die Lösch- bzw. Neustart-Funktion in dieser Seite oder indem du in den Einstellungen deines Browsers die Website-Daten löschst (auf dem iPad: Einstellungen › Apps › Safari › Erweitert › Website-Daten).</p>
+<h3>5. Externe Links</h3>
+<p>Wenn du einen Link zu einer anderen Website antippst (z. B. LEIFIphysik oder GitHub), gelten dort die Datenschutzbestimmungen des jeweiligen Anbieters.</p>
+<h3>6. Deine Rechte</h3>
+<p>Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Widerspruch gegen die Verarbeitung (Art. 21). Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren (Art. 77 DSGVO), zum Beispiel bei der Behörde deines Bundeslandes.</p>
+<p>Da ich selbst keine personenbezogenen Daten über dich speichere, wende dich für Daten aus den Server-Logs bitte direkt an GitHub.</p>
+<p class="small">Stand: ${STAND}</p>`
+};
+const box=document.getElementById("legal"),body=document.getElementById("lgBody");
+function show(which){
+  body.innerHTML=T[which]();body.scrollTop=0;
+  box.querySelectorAll(".seg .btn").forEach(b=>b.classList.toggle("on",b.dataset.lg===which));
+  box.classList.add("open");
+}
+function hide(){box.classList.remove("open");}
+document.addEventListener("click",ev=>{
+  const t=ev.target.closest("[data-lg]");if(!t)return;
+  const w=t.dataset.lg;
+  if(w==="close")hide();else if(T[w])show(w);
+});
+box.addEventListener("click",ev=>{if(ev.target===box)hide();});
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape")hide();});
+window.LEGAL_LINKS=`<div class="legal-links"><button data-lg="imp">Impressum</button> · <button data-lg="ds">Datenschutz</button></div>`;
+})();
+</script>
+<!-- ===== Ende Impressum & Datenschutz ===== -->
+<header id="hdr">
+  <h1>⚡<span class="t"> Stromwirkungen-Labor</span></h1>
+  <nav id="tabs"></nav>
+  <button class="switch" id="modelToggle" aria-pressed="false">🔬 Modell</button>
+</header>
+<main>
+  <section id="stage">
+    <div id="ov"></div>
+  </section>
+  <aside id="panel"></aside>
+</main>
+<script>
+"use strict";
+/* ================= Hilfsfunktionen ================= */
+const fmt=(x,d=1)=>(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace(".",",");
+const r1=x=>Math.round(x*10)/10, r2=x=>Math.round(x*100)/100;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const $=s=>document.querySelector(s);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+const LS={
+  get(k,d){try{const v=localStorage.getItem("swirk."+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem("swirk."+k,JSON.stringify(v));}catch(e){}},
+  clear(){try{Object.keys(localStorage).filter(k=>k.indexOf("swirk.")===0).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+};
+const SPEED=20; // Zeitraffer bei der Elektrolyse
+
+/* ================= Je-desto-Bausteine ================= */
+const ADJ={"größer":1,"kleiner":-1,"höher":1,"niedriger":-1,"heller":1,"dunkler":-1,"länger":1,"kürzer":-1};
+const A1=["größer","kleiner","länger","kürzer"], A2=["größer","kleiner","höher","niedriger","heller","dunkler"];
+const GK=["größer","kleiner"];
+const FIT={
+  "die Stromstärke":GK,"die Spannung":GK,"die Windungszahl":GK,"die Zeit":["länger","kürzer"],"die transportierte Ladung":GK,
+  "der Abstand zum Luxmeter":GK,
+  "die Temperatur des Drahts":["höher","niedriger"],"der Durchhang des Drahts":GK,"der Widerstand des Drahts":GK,
+  "leuchtet die Lampe":["heller","dunkler"],"die Beleuchtungsstärke":GK,"die Temperatur der Glühwendel":["höher","niedriger"],
+  "die Kraft auf den Magneten":GK,"der Ausschlag der Kompassnadel":GK,"das Gewicht des Magneten":GK,
+  "das Gasvolumen":GK,"die Temperatur des Wassers":["höher","niedriger"]
+};
+const NEAR_U={q:"die Spannung",msg:"Für diesen Aufbau stimmt das. Entscheidend für die Wirkung ist aber der Strom durch das Bauteil. Formuliere den Satz mit der Größe, die das Amperemeter misst."};
+
+/* ================= Stationen ================= */
+const STATIONS=[
+{
+  id:"start",tab:"Start",scene:"start",title:"Stromwirkungen – worum geht es?",
+  lead:"Elektrischen Strom kann man nicht sehen, hören oder riechen. Man erkennt ihn nur an seinen <b>Wirkungen</b>. In diesem Labor untersuchst du vier Wirkungen und findest heraus, wie man mit ihnen elektrische Größen <b>messen</b> kann.",
+  html:`<div class="card"><h3>So bedienst du das Labor</h3><ol class="steps">
+   <li>Oben wählst du den Versuch: <b>V1 Wärme</b>, <b>V2 Licht</b>, <b>V3 Magnet</b>, <b>V4 Chemie</b> und am Ende das <b>Fazit</b>.</li>
+   <li>Die <b>Spannung</b> stellst du mit dem Regler (oder den Tasten − / +) am Netzgerät ein.</li>
+   <li>Die Messwerte liest du an den Geräten ab. Sie stehen auch im Kasten oben rechts.</li>
+   <li><b>„Messwert aufnehmen“</b> trägt die Werte in die Tabelle ein. Darunter entsteht das <b>Diagramm</b>.</li>
+   <li>Mit deinen Messwerten bildest du <b>Je-desto-Sätze</b>.</li>
+   <li>Der Knopf <b>🔬 Modell</b> oben rechts zeigt, was <b>im Leiter</b> passiert: wie sich die Ladungen bewegen und wie die Teilchen durch Stöße schwingen.
+     <span class="legend" style="margin-top:4px"><span><span class="dot" style="background:#64748b">+</span> Atomrumpf</span><span><span class="dot" style="background:var(--neg);width:11px;height:11px"></span> Elektron</span></span></li>
+   <li>Tabellen, Antworten und Notizen bleiben auf diesem iPad gespeichert.</li>
+  </ol></div>`,
+  steps:["Schließe den Schalter. Woran erkennst du, dass ein Strom fließt?",
+   "Schalte das <b>🔬 Modell</b> ein. Beobachte die Elektronen bei <b>offenem</b> Schalter.",
+   "Schließe den Schalter wieder. Wie ändert sich die Bewegung der Elektronen?"],
+  qs:[
+   {q:"Woran erkennst du, dass im Stromkreis ein Strom fließt?",o:["An einer Wirkung des Stroms – hier: Die Lampe leuchtet.","Man sieht die Elektronen im Kabel wandern.","Die Kabel ändern ihre Farbe."],c:0,
+    ex:"Den Strom selbst sieht man nicht. Man erkennt ihn nur an dem, was er bewirkt."},
+   {q:"Was zeigt das Modell bei <b>offenem</b> Schalter?",o:["Die Elektronen bewegen sich ungeordnet kreuz und quer. Im Mittel kommen sie nicht voran.","Die Elektronen stehen still.","Im Draht gibt es dann keine Elektronen."],c:0,
+    ex:"Die freien Elektronen im Metall sind immer in ungeordneter Bewegung. Erst bei geschlossenem Stromkreis kommt eine gemeinsame Bewegung in eine Richtung (zum Pluspol) dazu."},
+   {q:"Was ist im Teilchenmodell der elektrische Strom?",o:["Die gerichtete Bewegung von Ladungsträgern – im Metall die der Elektronen.","Das Schwingen der Atomrümpfe.","Das Leuchten der Lampe."],c:0,
+    ex:"Elektrischer Strom = gerichtete Bewegung von Ladungsträgern. Die Atomrümpfe bleiben an ihren Plätzen, sie können nur schwingen."}
+  ],
+  model:{q:"Beschreibe mit eigenen Worten den Unterschied zwischen „Schalter offen“ und „Schalter geschlossen“ im Teilchenmodell.",
+    tips:["Wie bewegen sich die Elektronen jeweils?","Was machen die Atomrümpfe?","Wohin wandern die Elektronen, wenn der Schalter geschlossen ist?"],
+    ex:"Bei offenem Schalter bewegen sich die freien Elektronen ungeordnet zwischen den festen Atomrümpfen. Bei geschlossenem Schalter treibt das Netzgerät sie zusätzlich in eine Richtung an: Sie wandern langsam vom Minuspol durch den Draht zum Pluspol. Diese gerichtete Bewegung ist der elektrische Strom. Die Atomrümpfe bleiben an ihren Plätzen und schwingen nur."},
+  merk:"Elektrischer Strom ist die gerichtete Bewegung von Ladungsträgern. In Metallen sind das die frei beweglichen Elektronen. Den Strom selbst sieht man nicht – man erkennt ihn an seinen Wirkungen: Wärmewirkung, Lichtwirkung, magnetische Wirkung und chemische Wirkung."
+},
+{
+  id:"waerme",tab:"V1 Wärme",scene:"heat",title:"V1: Wärmewirkung – der heiße Draht",
+  lead:"Ein dünner Draht aus Konstantan ist zwischen zwei Stativen gespannt. Was passiert mit ihm, wenn ein Strom hindurchfließt?",
+  u:[0,12,0.5],imax:3,myst:[3,11.5],
+  steps:[
+   "Stelle die Spannung auf <b>2 V</b> und lies die Stromstärke <b>I</b> am Amperemeter ab.",
+   "Warte, bis die Temperatur <b>ϑ</b> nicht mehr steigt. Lies ϑ und den Durchhang <b>s</b> am Maßstab ab. Tippe auf „Messwert aufnehmen“.",
+   "Erhöhe die Spannung in Schritten von 2 V bis 12 V und miss jedes Mal neu.",
+   "Beobachte die <b>Papierreiter</b> auf dem Draht. Was passiert bei großer Stromstärke?",
+   "Werte aus: Schau dir die Diagramme „ϑ über I“ und „s über I“ an und bilde Je-desto-Sätze.",
+   "Schalte das <b>🔬 Modell</b> ein und vergleiche eine kleine mit einer großen Stromstärke."],
+  table:{cols:[{k:"u",l:"U in V",d:1},{k:"i",l:"I in A",d:2},{k:"t",l:"ϑ in °C",d:0},{k:"s",l:"s in mm",d:1}],
+    axes:[{x:"i",xl:"Stromstärke I in A",y:"t",yl:"Temperatur ϑ in °C",n:"ϑ über I"},{x:"i",xl:"Stromstärke I in A",y:"s",yl:"Durchhang s in mm",n:"s über I"}]},
+  jd:{slots:["Was passiert mit der Temperatur?","Was passiert mit dem Durchhang?"],
+    qty:["die Stromstärke","die Spannung","die Zeit"],res:["die Temperatur des Drahts","der Durchhang des Drahts","der Widerstand des Drahts"],
+    ok:[{q:"die Stromstärke",r:["die Temperatur des Drahts"],rel:1,h:"An der Temperatur des Drahts kann man ablesen, wie groß die Stromstärke ist."},
+        {q:"die Stromstärke",r:["der Durchhang des Drahts"],rel:1,h:"Der Draht dehnt sich bei höherer Temperatur stärker aus. Mit einem Zeiger am Draht wird daraus ein Strommessgerät (Hitzdraht-Messgerät)."}],
+    near:[NEAR_U]},
+  qs:[
+   {q:"Mit Strom wird der Draht warm und hängt durch. Warum hängt er durch?",o:["Der Draht dehnt sich beim Erwärmen aus und wird länger.","Der Strom macht den Draht schwerer.","Der Strom zieht den Draht nach unten zur Erde."],c:0,
+    ex:"Fast alle Körper dehnen sich beim Erwärmen aus. Der längere Draht hängt zwischen den Stativen weiter durch."},
+   {q:"Du verdoppelst die Stromstärke (z. B. von 1 A auf 2 A). Wie ändert sich die Temperaturerhöhung ϑ − 20 °C?",o:["Sie wird etwa viermal so groß.","Sie verdoppelt sich genau.","Sie bleibt gleich."],c:0,
+    ex:"Schau in deine Tabelle: Die Kurve „ϑ über I“ wird immer steiler. Bei doppelter Stromstärke fließen pro Sekunde doppelt so viele Elektronen durch den Draht, und jedes gibt bei den Stößen auch mehr Energie ab – zusammen etwa viermal so viel."},
+   {q:"Warum kann man mit dem Durchhang des Drahts die Stromstärke messen?",o:["Weil zu jeder Stromstärke ein bestimmter Durchhang gehört: Je größer I, desto größer s. Mit einer passenden Skala kann man I ablesen.","Weil der Durchhang nicht von der Stromstärke abhängt.","Weil der Draht dann leuchtet."],c:0,
+    ex:"So funktioniert das <b>Hitzdraht-Messgerät</b>: Ein Zeiger hängt an einem dünnen Draht. Je größer die Stromstärke, desto länger wird der Draht und desto weiter dreht sich der Zeiger. Die Skala beschriftet man mit Hilfe eines Amperemeters (man <b>eicht</b> das Gerät)."}
+  ],
+  model:{q:"Erkläre mit dem Teilchenmodell: Warum wird der Draht warm, wenn Strom fließt – und warum wird er bei größerer Stromstärke heißer?",
+    tips:["Was machen die Elektronen, wenn Strom fließt?","Was passiert, wenn ein Elektron auf einen Atomrumpf trifft?","Wie bewegen sich die Atomrümpfe danach? Was bedeutet das für die Temperatur?","Warum braucht der Draht dann mehr Platz?"],
+    ex:"Das Netzgerät treibt die Elektronen an, sie bewegen sich gerichtet durch den Draht. Dabei <b>stoßen</b> sie ständig mit den Atomrümpfen zusammen und geben bei jedem Stoß Energie an sie ab. Die Atomrümpfe <b>schwingen</b> dadurch heftiger um ihre Plätze. Heftigere Teilchenbewegung bedeutet <b>höhere Temperatur</b>. Weil die Teilchen stärker schwingen, brauchen sie mehr Platz: Der Draht dehnt sich aus und hängt durch. Bei größerer Stromstärke fließen mehr Elektronen pro Sekunde, es gibt mehr und heftigere Stöße – der Draht wird heißer."},
+  info:"Wenn Strom durch einen Draht fließt, erwärmt er sich: <b>Wärmewirkung</b>. Sie wird genutzt in Wasserkocher, Föhn, Toaster und Herdplatte – und in <b>Schmelzsicherungen</b>, die bei zu großer Stromstärke durchschmelzen und den Stromkreis unterbrechen. Weil Temperatur und Ausdehnung des Drahts eindeutig von der Stromstärke abhängen, kann man mit der Wärmewirkung Stromstärken messen.",
+  merk:"Wärmewirkung: Ein Leiter, durch den Strom fließt, erwärmt sich. Je größer die Stromstärke, desto höher die Temperatur des Leiters und desto stärker dehnt er sich aus. Ursache: Die Elektronen stoßen mit den Atomrümpfen und regen sie zu heftigeren Schwingungen an."
+},
+{
+  id:"licht",tab:"V2 Licht",scene:"light",title:"V2: Lichtwirkung – die Glühlampe",
+  lead:"In einer Glühlampe sitzt eine sehr dünne Glühwendel aus Wolfram. Wie hell leuchtet sie bei verschiedenen Stromstärken? Der Raum ist abgedunkelt, das Luxmeter misst die Beleuchtungsstärke <b>E</b> in Lux (lx).",
+  u:[0,7,0.25],imax:1,myst:[3.6,6.4],
+  steps:[
+   "Erhöhe die Spannung von 0 V bis 6 V (Nennspannung der Lampe) in Schritten von 0,5 V.",
+   "Lies jedes Mal die Stromstärke <b>I</b> und die Beleuchtungsstärke <b>E</b> ab und nimm den Messwert auf.",
+   "Beobachte die Glühwendel genau: Welche Farbe hat sie, wenn sie gerade anfängt zu glühen?",
+   "Schau dir das Diagramm „E über I“ an und bilde Je-desto-Sätze.",
+   "Schalte das <b>🔬 Modell</b> ein. Vergleiche mit dem Draht aus V1."],
+  table:{cols:[{k:"u",l:"U in V",d:2},{k:"i",l:"I in A",d:2},{k:"e",l:"E in lx",d:1}],
+    axes:[{x:"i",xl:"Stromstärke I in A",y:"e",yl:"Beleuchtungsstärke E in lx",n:"E über I"}]},
+  jd:{slots:["Wie hängt die Helligkeit von der Stromstärke ab?","Und die Temperatur der Wendel?"],
+    qty:["die Stromstärke","die Spannung","der Abstand zum Luxmeter"],res:["leuchtet die Lampe","die Beleuchtungsstärke","die Temperatur der Glühwendel"],
+    ok:[{q:"die Stromstärke",r:["leuchtet die Lampe","die Beleuchtungsstärke"],rel:1,h:"Bei derselben Lampe zeigt die Helligkeit an, wie groß die Stromstärke ist – allerdings nur grob."},
+        {q:"die Stromstärke",r:["die Temperatur der Glühwendel"],rel:1,h:"Erst durch die hohe Temperatur kommt es zum Leuchten: Die Lichtwirkung ist eine Folge der Wärmewirkung."}],
+    near:[NEAR_U]},
+  qs:[
+   {q:"Bei kleiner Stromstärke wird die Wendel nur warm, dann glüht sie dunkelrot und erst bei großer Stromstärke hell gelblich-weiß. Was folgt daraus?",o:["Die Lichtwirkung ist eine Folge der Wärmewirkung: Erst ein sehr heißer Körper sendet sichtbares Licht aus.","Licht und Wärme haben nichts miteinander zu tun.","Bei kleinen Stromstärken ist die Lampe defekt."],c:0,
+    ex:"Ein Körper glüht ab etwa 600 °C dunkelrot, bei höherer Temperatur gelb bis weiß. Die Glühwendel erreicht im Betrieb etwa 2500 °C."},
+   {q:"Die Stromstärke steigt von 0,40 A auf 0,50 A. Wie ändert sich die Beleuchtungsstärke?",o:["Sie steigt viel stärker an als die Stromstärke (etwa auf das Achtfache).","Sie steigt im gleichen Verhältnis (um ein Viertel).","Sie sinkt."],c:0,
+    ex:"Im Diagramm wird die Kurve immer steiler. Die Helligkeit hängt sehr stark von der Temperatur der Wendel ab."},
+   {q:"Eignet sich die Lichtwirkung gut, um Stromstärken genau zu messen?",o:["Nur grob: Bei kleinen Stromstärken leuchtet die Lampe gar nicht, und die Helligkeit hängt auch von der Lampe und vom Abstand ab.","Ja, sie ist das genaueste Messverfahren.","Nein, die Helligkeit hängt überhaupt nicht von der Stromstärke ab."],c:0,
+    ex:"Als <b>Anzeige</b> ist sie trotzdem nützlich: Eine Lampe zeigt sofort, ob ein Strom fließt – und bei derselben Lampe heißt heller: größere Stromstärke."}
+  ],
+  model:{q:"Erkläre mit dem Teilchenmodell, warum die Glühwendel bei großer Stromstärke Licht aussendet.",
+    tips:["Vergleiche mit dem Draht aus V1: Was passiert bei den Stößen?","Wie stark schwingen die Atomrümpfe in der Wendel?","Was geben die Teilchen ab, wenn sie sehr heftig schwingen?"],
+    ex:"Wie im Draht aus V1 stoßen die Elektronen mit den Atomrümpfen der Wendel und regen sie zu Schwingungen an. Die Wendel ist sehr dünn, deshalb treffen sehr viele Stöße auf wenige Teilchen: Sie wird sehr heiß, die Atomrümpfe schwingen sehr heftig. Bei so heftigen Schwingungen geben die Teilchen einen Teil ihrer Energie als <b>Licht</b> ab (im Modell: gelbe Wellen). Je größer die Stromstärke, desto heftiger die Schwingungen und desto mehr Licht."},
+  info:"<b>Lichtwirkung:</b> Ein Leiter, durch den Strom fließt, kann so heiß werden, dass er glüht und Licht aussendet (Glühlampe). Dabei wird der größte Teil der Energie als Wärme abgegeben. Es gibt auch Lichtwirkungen ohne große Hitze, etwa in Leuchtdioden (LEDs) oder Glimmlampen – dort entsteht das Licht auf andere Weise.",
+  merk:"Lichtwirkung: Ein vom Strom durchflossener Leiter kann so heiß werden, dass er Licht aussendet. Je größer die Stromstärke, desto heller leuchtet die Glühlampe."
+},
+{
+  id:"magnet",tab:"V3 Magnet",scene:"mag",title:"V3: Magnetische Wirkung – der Elektromagnet",
+  lead:"Über einer Spule hängt ein kleiner Dauermagnet an einem Kraftmesser. Ohne Strom zeigt der Kraftmesser 0 mN. Daneben steht ein Kompass.",
+  u:[0,6,0.25],imax:3,myst:[1.6,5.8],
+  steps:[
+   "Wähle die Spule mit <b>600 Windungen</b>, ohne Eisenkern.",
+   "Erhöhe die Spannung schrittweise. Lies jeweils <b>I</b> und die Kraft <b>F</b> ab und nimm den Messwert auf.",
+   "Tippe auf <b>Umpolen</b>. Was ändert sich am Magneten und am Kompass?",
+   "Wiederhole die Messreihe mit 300 und 1200 Windungen. Vergleiche nur bei <b>gleicher Stromstärke</b> – stelle dazu die Spannung passend ein.",
+   "Setze den <b>Eisenkern</b> ein. Was beobachtest du?",
+   "Schau dir das Diagramm „F über I“ an (jede Spule hat eine eigene Farbe) und bilde Je-desto-Sätze."],
+  table:{cols:[{k:"n",l:"N",d:0},{k:"k",l:"Eisen&shy;kern",txt:true},{k:"i",l:"I in A",d:2},{k:"f",l:"F in mN",d:0}],
+    axes:[{x:"i",xl:"Stromstärke I in A",y:"f",yl:"Kraft F in mN",n:"F über I"}],g:r=>`${r.n} Wdg.${r.k==="mit"?" + Kern":""}`},
+  jd:{slots:["Gleiche Spule, verschiedene Stromstärken:","Verschiedene Spulen, gleiche Stromstärke:"],
+    qty:["die Stromstärke","die Windungszahl","die Spannung"],res:["die Kraft auf den Magneten","der Ausschlag der Kompassnadel","das Gewicht des Magneten"],
+    ok:[{q:"die Stromstärke",r:["die Kraft auf den Magneten","der Ausschlag der Kompassnadel"],rel:1,h:"Die Kraft ist sogar proportional zur Stromstärke: doppelte Stromstärke, doppelte Kraft. Deshalb eignet sich die magnetische Wirkung so gut zum Messen."},
+        {q:"die Windungszahl",r:["die Kraft auf den Magneten","der Ausschlag der Kompassnadel"],rel:1,h:"Viele Windungen verstärken die magnetische Wirkung – so werden Messgeräte empfindlicher."}],
+    near:[{q:"die Spannung",msg:"Bei einer Spule stimmt das. Vergleichst du aber Spulen mit verschiedenen Windungszahlen, hilft die Spannung nicht weiter. Entscheidend ist die Stromstärke."}]},
+  qs:[
+   {q:"Ohne Strom zeigt der Kraftmesser 0 mN. Mit Strom wird der Magnet angezogen und die Kompassnadel dreht sich. Was zeigt das?",o:["Eine Spule, durch die Strom fließt, wirkt wie ein Magnet.","Der Strom macht den Dauermagneten schwerer.","Die Spule wird warm und zieht dadurch den Magneten an."],c:0,
+    ex:"Um jeden Leiter, durch den Strom fließt, entsteht ein Magnetfeld. In einer Spule verstärken sich die Felder der vielen Windungen. Die Kompassnadel zeigt das ganz ohne Berührung."},
+   {q:"Was passiert beim Umpolen?",o:["Der Magnet wird abgestoßen statt angezogen, die Kompassnadel dreht in die andere Richtung.","Nichts ändert sich.","Es fließt kein Strom mehr."],c:0,
+    ex:"Die Richtung der magnetischen Wirkung hängt von der Stromrichtung ab. Bei der Wärmewirkung spielt die Richtung dagegen keine Rolle."},
+   {q:"Bei derselben Spule verdoppelst du die Stromstärke. Die Kraft …",o:["verdoppelt sich ebenfalls.","vervierfacht sich.","bleibt gleich."],c:0,
+    ex:"Im Diagramm liegen die Messpunkte einer Spule auf einer Geraden durch den Ursprung: F ist proportional zu I."},
+   {q:"Wie funktionieren die meisten Zeiger-Amperemeter?",o:["Sie nutzen die magnetische Wirkung: Die Kraft zwischen Spule und Magnet dreht einen Zeiger gegen eine Feder.","Sie zählen die Elektronen einzeln.","Sie messen die Helligkeit einer kleinen Lampe."],c:0,
+    ex:"Im <b>Drehspul-Messgerät</b> sitzt eine drehbare Spule zwischen den Polen eines Dauermagneten. Je größer die Stromstärke, desto größer die Kraft und desto weiter dreht sich der Zeiger."}
+  ],
+  model:{q:"Woher kommt im Teilchenmodell die magnetische Wirkung? Warum kehrt sie sich beim Umpolen um?",
+    tips:["Was passiert mit dem Magnetfeld (⊙ und ⊗), wenn die Elektronen sich gerichtet bewegen?","Wie hängt die Stärke des Feldes von der Stromstärke ab?","Was ändert sich beim Umpolen an der Bewegung der Elektronen?"],
+    ex:"<b>Bewegte Ladungen erzeugen ein Magnetfeld.</b> Fließen die Elektronen gerichtet durch den Draht, entsteht um den Draht herum ein Magnetfeld (im Modell: ⊙ Feld zeigt aus dem Bildschirm heraus, ⊗ in den Bildschirm hinein). Je mehr Elektronen pro Sekunde fließen – also je größer die Stromstärke –, desto stärker ist das Feld. Beim Umpolen bewegen sich die Elektronen in die andere Richtung, deshalb kehrt sich auch das Magnetfeld um. Viele Windungen verstärken das Feld, ein Eisenkern verstärkt es noch einmal deutlich. Im Draht der Spule gibt es auch Stöße – er wird aber nur wenig warm."},
+  info:"<b>Magnetische Wirkung:</b> Jeder Leiter, durch den Strom fließt, ist von einem Magnetfeld umgeben (H. C. Ørsted, 1820). Spulen mit vielen Windungen und Eisenkern sind starke <b>Elektromagnete</b>: Sie stecken in Türöffnern, Lautsprechern, Elektromotoren, Relais und Lasthebemagneten. Die magnetische Wirkung tritt <b>bei jedem Strom</b> auf. Deshalb nutzen die meisten Strommessgeräte diese Wirkung.",
+  merk:"Magnetische Wirkung: Ein vom Strom durchflossener Leiter ist von einem Magnetfeld umgeben. Je größer die Stromstärke und je größer die Windungszahl der Spule, desto größer die magnetische Kraft. Ein Eisenkern verstärkt die Wirkung. Beim Umpolen kehrt sich die Kraftrichtung um."
+},
+{
+  id:"chemie",tab:"V4 Chemie",scene:"chem",title:"V4: Chemische Wirkung – Wasser wird zerlegt",
+  lead:"Im Hofmann'schen Wasserzersetzungsapparat fließt Strom durch Wasser, in dem etwas Natriumsulfat gelöst ist (damit es leitet). An den Elektroden steigen Gasbläschen auf.",
+  u:[0,8,0.25],imax:3,myst:[3.2,7.6],
+  steps:[
+   "Stelle eine Spannung ein (z. B. 4 V). Schließe den Schalter: Die <b>Stoppuhr</b> läuft im Zeitraffer (1 s ≙ 20 s). Lies <b>I</b> ab.",
+   "Öffne den Schalter nach 1, 2, 3 … Minuten, lies das Gasvolumen <b>V</b> am Minuspol ab und nimm den Messwert auf. Schließe dann wieder.",
+   "Tippe auf „Gas ablassen, Uhr auf 0“. Miss nun bei verschiedenen Stromstärken jeweils genau <b>3 Minuten</b> lang.",
+   "Vergleiche die beiden Röhren: Wie viel Gas entsteht am Pluspol im Vergleich zum Minuspol?",
+   "Schau dir die Diagramme „V über t“, „V über I“ und „V über Q“ an (Q = I · t) und bilde Je-desto-Sätze."],
+  table:{cols:[{k:"i",l:"I in A",d:2},{k:"t",l:"t in s",d:0},{k:"q",l:"Q = I·t in As",d:0},{k:"vh",l:"V(H₂) in ml",d:1},{k:"vo",l:"V(O₂) in ml",d:1}],
+    axes:[{x:"t",xl:"Zeit t in s",y:"vh",yl:"Volumen V(H₂) in ml",n:"V über t"},{x:"i",xl:"Stromstärke I in A",y:"vh",yl:"Volumen V(H₂) in ml",n:"V über I"},{x:"q",xl:"Ladung Q in As",y:"vh",yl:"Volumen V(H₂) in ml",n:"V über Q"}]},
+  jd:{slots:["Gleiche Stromstärke, verschiedene Zeiten:","Gleiche Zeit, verschiedene Stromstärken:","Beides zusammen:"],
+    qty:["die Zeit","die Stromstärke","die transportierte Ladung","die Spannung"],res:["das Gasvolumen","die Temperatur des Wassers"],
+    ok:[{q:"die Zeit",r:["das Gasvolumen"],rel:1,h:"Bei gleicher Stromstärke ist das Gasvolumen proportional zur Zeit."},
+        {q:"die Stromstärke",r:["das Gasvolumen"],rel:1,h:"Bei gleicher Zeit ist das Gasvolumen proportional zur Stromstärke."},
+        {q:"die transportierte Ladung",r:["das Gasvolumen"],rel:1,h:"Das Gasvolumen ist ein Maß für die Ladung Q = I · t, die durch den Stromkreis geflossen ist. So kann man Ladung messen!"}],
+    near:[NEAR_U]},
+  qs:[
+   {q:"Am Minuspol entsteht doppelt so viel Gas wie am Pluspol. Welche Gase sind es?",o:["Am Minuspol Wasserstoff, am Pluspol Sauerstoff – Wasser wird in seine Bestandteile zerlegt.","An beiden Polen Luft.","Am Minuspol Sauerstoff, am Pluspol Wasserstoff."],c:0,
+    ex:"Wasser (H₂O) besteht aus Wasserstoff und Sauerstoff im Verhältnis 2 : 1. Nachweis: Wasserstoff mit der Knallgasprobe, Sauerstoff mit der Glimmspanprobe."},
+   {q:"Die Stromstärke bleibt gleich. Nach der doppelten Zeit ist das Gasvolumen …",o:["doppelt so groß.","gleich groß.","viermal so groß."],c:0,
+    ex:"Schau dir das Diagramm „V über t“ an: Die Punkte liegen auf einer Geraden durch den Ursprung."},
+   {q:"Du misst 3 min lang bei 0,5 A und 1,5 min lang bei 1,0 A. Was stellst du fest?",o:["Das Gasvolumen ist gleich groß. Entscheidend ist das Produkt I · t, also die transportierte Ladung Q.","Bei 1,0 A entsteht doppelt so viel Gas.","Bei 0,5 A entsteht doppelt so viel Gas."],c:0,
+    ex:"In beiden Fällen ist Q = I · t = 90 As. Die Gasmenge ist ein Maß für die Ladung, die durch den Stromkreis geflossen ist. Früher wurde die Einheit der Ladung (1 Coulomb = 1 As) sogar mit der chemischen Wirkung festgelegt."}
+  ],
+  model:{q:"Erkläre mit dem Modell: Warum entsteht bei doppelter Zeit oder doppelter Stromstärke doppelt so viel Gas?",
+    tips:["Welche Ladungsträger bewegen sich in der Flüssigkeit?","Wohin wandern die positiven und die negativen Ionen?","Was passiert an den Elektroden mit den Elektronen?","Wie viele Elektronen braucht man für ein Wasserstoffteilchen?"],
+    ex:"In der Flüssigkeit gibt es keine freien Elektronen, sondern geladene Teilchen, die <b>Ionen</b>. Positive Ionen wandern zum Minuspol, negative zum Pluspol. An den Elektroden werden Elektronen aufgenommen oder abgegeben – dabei entstehen Wasserstoff und Sauerstoff. Für jedes Wasserstoffteilchen (H₂) müssen <b>2 Elektronen</b> durch den Stromkreis fließen. Die Gasmenge zeigt also an, wie viele Elektronen insgesamt geflossen sind, das heißt: wie groß die Ladung Q ist. Doppelte Zeit oder doppelte Stromstärke → doppelte Ladung → doppelte Gasmenge."},
+  info:"<b>Chemische Wirkung:</b> Fließt Strom durch eine leitende Flüssigkeit, werden Stoffe zerlegt oder abgeschieden (<b>Elektrolyse</b>). Anwendungen: Verkupfern, Vergolden und Verchromen, Laden von Akkus, Herstellung von Aluminium und Wasserstoff. Die Menge des entstehenden Stoffs ist proportional zur Ladung Q = I · t. Damit kann man Ladung messen.",
+  merk:"Chemische Wirkung: Strom kann leitende Flüssigkeiten zerlegen (Elektrolyse). Je größer die Stromstärke und je länger die Zeit, desto mehr Gas entsteht. Die Gasmenge ist ein Maß für die transportierte Ladung Q = I · t."
+},
+{
+  id:"fazit",tab:"Fazit",scene:"fazit",title:"Fazit: Strom messen über seine Wirkungen",summary:true,
+  lead:"Strom kann man nicht direkt sehen. Aber jede Wirkung hängt in bestimmter Weise von der Stromstärke ab – und wird so zum <b>Messinstrument</b>.",
+  qs:[
+   {q:"Welche Wirkung tritt bei jedem Strom auf, egal in welchem Leiter?",o:["Die magnetische Wirkung.","Die Lichtwirkung.","Die chemische Wirkung."],c:0,
+    ex:"Die chemische Wirkung braucht eine leitende Flüssigkeit, die Lichtwirkung eine sehr hohe Temperatur. Ein Magnetfeld entsteht dagegen bei jedem Strom."},
+   {q:"Ein selbst gebautes Strommessgerät muss man <b>eichen</b>. Was heißt das?",o:["Man ordnet jedem Ausschlag mit Hilfe bekannter Stromstärken einen Wert zu und beschriftet so die Skala.","Man stellt es auf einen Tisch aus Eichenholz.","Man misst damit zuerst eine Spannung."],c:0,
+    ex:"Genau das hast du mit deinen Tabellen und Diagrammen gemacht. Beim „Rätselstrom“ konntest du die Stromstärke dann allein aus der Wirkung bestimmen."},
+   {q:"Womit kann man die Ladung Q bestimmen, die in einer bestimmten Zeit durch einen Stromkreis geflossen ist?",o:["Mit der chemischen Wirkung: Die entstandene Gasmenge ist proportional zu Q.","Mit der Lichtwirkung.","Das ist nicht möglich."],c:0,
+    ex:"Für jedes Wasserstoffteilchen fließen genau 2 Elektronen. Aus dem Gasvolumen kann man deshalb auf die geflossene Ladung schließen."}
+  ],
+  merk:"Elektrische Größen sind nicht direkt sichtbar. Man misst sie über ihre Wirkungen. Ein Messgerät nutzt eine Wirkung, die eindeutig von der Größe abhängt („je größer die Stromstärke, desto größer die Wirkung“), und wird mit bekannten Werten geeicht."
+}
+];
+
+/* ================= Physik ================= */
+let cur=null,curIdx=0,modelOn=false;
+const cache={};
+const panel=$("#panel"), stage=$("#stage"), ov=$("#ov");
+const RIDER_T=[0.25,0.6,0.78];
+function newRiders(){return RIDER_T.map(t=>({t,c:0,fall:false,y:0,vy:0,rot:0,landed:false}));}
+function makeRuntime(cfg){
+  const r={cfg,sc:cfg.scene,U:0,I:0,msg:"",myst:null};
+  if(r.sc==="start"){r.sw=false;r.Tf=293;r.E=0;}
+  if(r.sc==="heat"){r.T=20;r.s=2;r.riders=newRiders();r.fellMsg=false;}
+  if(r.sc==="light"){r.Tf=293;r.E=0;}
+  if(r.sc==="mag"){r.N=600;r.core=false;r.pol=1;r.F=0;r.Fd=0;r.ang=0;}
+  if(r.sc==="chem"){r.run=false;r.time=0;r.Q=0;r.VH=0;r.VO=0;r.bub=[];r.changed=false;r.lastI=0;}
+  return r;
+}
+const Ueff=r=>r.myst?r.myst.U:r.U;
+const lampI=U=>U<=0?0:0.5*Math.pow(U/6,0.55);
+function current(r){
+  const U=Ueff(r);
+  switch(r.sc){
+    case"start":return r.sw?lampI(6):0;
+    case"heat":return U/4;
+    case"light":return lampI(U);
+    case"mag":return U/(2+r.N/300);
+    case"chem":return r.run&&U>1.8?(U-1.8)/2.5:0;
+  }
+  return 0;
+}
+const heatTs=I=>20+72*I*I;               // stationäre Drahttemperatur in °C (R = 4 Ω)
+const lampTs=P=>P>0?Math.max(293,2750*Math.pow(P/3,0.27)):293;
+function step(dt){
+  const r=cur;const Iold=r.I;r.I=current(r);
+  switch(r.sc){
+    case"start":case"light":{
+      const U=r.sc==="start"?(r.sw?6:0):Ueff(r);
+      r.Tf+=(lampTs(U*r.I)-r.Tf)*(1-Math.exp(-dt/0.15));
+      r.E=380*Math.pow(r.Tf/2750,12.6);if(r.E<0.05)r.E=0;break;}
+    case"heat":{
+      r.T+=(heatTs(r.I)-r.T)*(1-Math.exp(-dt/2.5));
+      r.s=Math.sqrt(4+1.406*Math.max(0,r.T-20));
+      r.riders.forEach(p=>{
+        if(!p.fall){if(r.T>240){p.c+=dt*(r.T-240)/70;if(p.c>=1){p.c=1;p.fall=true;p.y=wireY(p.t,r.s);p.vy=0;
+          if(!r.fellMsg){r.fellMsg=true;setMsg("Ein Papierreiter ist verkohlt und heruntergefallen – der Draht ist heißer als etwa 240 °C.");}}}}
+        else if(!p.landed){p.vy+=900*dt;p.y+=p.vy*dt;p.rot+=dt*5;if(p.y>=512){p.y=512;p.landed=true;}}
+      });break;}
+    case"mag":{
+      const NI=r.N*r.I*(r.core?6:1)*r.pol;
+      r.F=0.12*NI;r.Fd+=(r.F-r.Fd)*(1-Math.exp(-dt/0.25));
+      r.ang+=(Math.atan(NI/300)-r.ang)*(1-Math.exp(-dt/0.3));break;}
+    case"chem":{
+      if(r.run){
+        if(Math.abs(r.I-Iold)>1e-6&&r.time>0)r.changed=true;
+        const sd=dt*SPEED;r.time+=sd;r.Q+=r.I*sd;r.lastI=r.I;
+        r.VH=r.Q*0.1244;r.VO=r.VH/2;
+        if(r.VH>=50){r.VH=50;r.VO=25;r.run=false;r.I=0;setMsg("Die Röhre ist voll. Tippe auf „Gas ablassen, Uhr auf 0“.");refreshControls();}
+      }
+      [[470,14],[650,7]].forEach(([x,rate],k)=>{if(r.I>0&&Math.random()<rate*r.I*dt)r.bub.push({x:x+(Math.random()-.5)*10,y:405+Math.random()*40,r:k?2.5+Math.random()*2:2+Math.random()*2,k});});
+      r.bub.forEach(b=>{b.y-=130*dt;b.x+=Math.sin(b.y*.1)*.3;});
+      r.bub=r.bub.filter(b=>b.y>100+(b.k?r.VO:r.VH)*6);
+      break;}
+  }
+}
+function readout(r){
+  const h=r.myst,U=Ueff(r),uS=h?"?":fmt(U,r.sc==="light"?2:1)+" V",iS=h?"?":fmt(r.I,2)+" A";
+  const row=(k,v)=>`<div class="row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  switch(r.sc){
+    case"start":return row("Schalter",r.sw?"geschlossen":"offen")+row("Lampe",r.E>1?"leuchtet":"aus");
+    case"heat":return row("Spannung U",uS)+row("Stromstärke I",iS)+row("Temperatur ϑ",fmt(r.T,0)+" °C")+row("Durchhang s",fmt(r.s,1)+" mm");
+    case"light":return row("Spannung U",uS)+row("Stromstärke I",iS)+row("Beleuchtungsst. E",fmtE(r.E));
+    case"mag":return row("Spannung U",uS)+row("Stromstärke I",iS)+row("Spule",`${r.N} Wdg., ${r.core?"mit":"ohne"} Kern`)+row("Kraft F",fmt(r.Fd,0)+" mN");
+    case"chem":return row("Spannung U",uS)+row("Stromstärke I",iS)+row("Zeit t",clock(r.time))+row("V(H₂) Minuspol",fmt(r.VH,1)+" ml")+row("V(O₂) Pluspol",fmt(r.VO,1)+" ml");
+  }
+  return "";
+}
+const fmtE=E=>E<100?fmt(E,1)+" lx":fmt(E,0)+" lx";
+const clock=t=>{const s=Math.floor(t);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")+" min";};
+
+/* ================= Zeichnen: Grundelemente ================= */
+const cv=document.createElement("canvas");stage.prepend(cv);const ctx=cv.getContext("2d");
+let cw=0,ch=0,dpr=1;
+function resize(){const b=stage.getBoundingClientRect();cw=b.width;ch=b.height;dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(cw*dpr));cv.height=Math.max(1,Math.round(ch*dpr));}
+const FONT='-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',MONO='ui-monospace,"SF Mono",Menlo,Consolas,monospace';
+const RED="#dc2626",BLUE="#2563eb";
+function rr(c,a,b,w,h,r){c.beginPath();c.moveTo(a+r,b);c.arcTo(a+w,b,a+w,b+h,r);c.arcTo(a+w,b+h,a,b+h,r);c.arcTo(a,b+h,a,b,r);c.arcTo(a,b,a+w,b,r);c.closePath();}
+function txt(c,s,x,y,o){o=o||{};c.font=`${o.w||600} ${o.s||18}px ${o.f||FONT}`;c.fillStyle=o.c||"#0f172a";c.textAlign=o.a||"left";c.textBaseline=o.b||"alphabetic";c.fillText(s,x,y);}
+function wire(c,pts,col){c.save();c.strokeStyle=col;c.lineWidth=5;c.lineJoin="round";c.lineCap="round";c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.stroke();c.restore();}
+function lerpStops(stops,v){if(v<=stops[0][0])return stops[0][1];for(let i=1;i<stops.length;i++){if(v<=stops[i][0]){const a=stops[i-1],b=stops[i],f=(v-a[0])/(b[0]-a[0]);return a[1].map((x,k)=>Math.round(x+(b[1][k]-x)*f));}}return stops[stops.length-1][1];}
+const HOT=[[780,[148,156,168]],[900,[130,40,30]],[1100,[200,40,15]],[1450,[240,110,30]],[2000,[255,190,80]],[2700,[255,245,215]]];
+const rgb=a=>`rgb(${a[0]},${a[1]},${a[2]})`;
+function drawSupply(c,U,frac,hidden,dec){dec=dec||1;
+  const x=40,y=400;
+  c.save();c.shadowColor="rgba(0,0,0,.18)";c.shadowBlur=8;c.shadowOffsetY=3;rr(c,x,y,200,130,14);c.fillStyle="#334155";c.fill();c.restore();
+  rr(c,x+14,y+14,124,52,8);c.fillStyle="#052e16";c.fill();
+  txt(c,hidden?"??,?? V":fmt(U,dec)+" V",x+130,y+52,{s:27,c:"#4ade80",a:"right",w:700,f:MONO});
+  c.beginPath();c.arc(x+168,y+40,19,0,7);c.fillStyle="#0f172a";c.fill();c.strokeStyle="#94a3b8";c.lineWidth=2;c.stroke();
+  const an=Math.PI*0.75+Math.PI*1.5*Math.abs(frac);c.beginPath();c.moveTo(x+168,y+40);c.lineTo(x+168+15*Math.cos(an),y+40+15*Math.sin(an));c.strokeStyle="#fff";c.lineWidth=3;c.stroke();
+  txt(c,"Netzgerät",x+16,y+88,{s:14,c:"#cbd5e1"});
+  [[x+50,"+",RED],[x+150,"−",BLUE]].forEach(([px,l,col])=>{c.beginPath();c.arc(px,y+102,11,0,7);c.fillStyle=col;c.fill();c.strokeStyle="#0f172a";c.lineWidth=2;c.stroke();txt(c,l,px+18,y+108,{s:18,c:"#fff",w:800});});
+  if(hidden){c.save();c.translate(x+76,y+40);c.rotate(-0.06);rr(c,-66,-32,132,64,4);c.fillStyle="#fde68a";c.fill();c.strokeStyle="#d97706";c.lineWidth=1.5;c.stroke();txt(c,"abgedeckt",0,8,{s:17,a:"center",c:"#78350f",w:700});c.restore();}
+}
+function drawAmmeter(c,cx,cy,I,Imax,hidden){
+  c.save();c.shadowColor="rgba(0,0,0,.18)";c.shadowBlur=8;c.shadowOffsetY=3;c.beginPath();c.arc(cx,cy,52,0,7);c.fillStyle="#fff";c.fill();c.restore();
+  c.beginPath();c.arc(cx,cy,52,0,7);c.lineWidth=4;c.strokeStyle="#334155";c.stroke();
+  const a0=Math.PI*1.17,a1=Math.PI*1.83;
+  c.strokeStyle="#334155";c.lineWidth=1.5;
+  for(let k=0;k<=10;k++){const a=a0+(a1-a0)*k/10,r0=k%5?38:34;c.beginPath();c.moveTo(cx+r0*Math.cos(a),cy+8+r0*Math.sin(a));c.lineTo(cx+43*Math.cos(a),cy+8+43*Math.sin(a));c.stroke();}
+  [0,5,10].forEach(k=>{const a=a0+(a1-a0)*k/10;txt(c,fmt(Imax*k/10,Imax<2&&k===5?1:0),cx+26*Math.cos(a),cy+12+26*Math.sin(a),{s:11,a:"center",c:"#475569"});});
+  const a=a0+(a1-a0)*clamp(I/Imax,0,1.04);
+  c.beginPath();c.moveTo(cx,cy+8);c.lineTo(cx+44*Math.cos(a),cy+8+44*Math.sin(a));c.strokeStyle=RED;c.lineWidth=2.5;c.stroke();
+  c.beginPath();c.arc(cx,cy+8,4,0,7);c.fillStyle="#0f172a";c.fill();
+  txt(c,"A",cx,cy+38,{s:18,a:"center",w:800});
+  rr(c,cx-48,cy+60,96,30,6);c.fillStyle="#0f172a";c.fill();
+  txt(c,hidden?"?,?? A":fmt(I,2)+" A",cx+40,cy+82,{s:19,a:"right",c:"#4ade80",w:700,f:MONO});
+  [cx-52,cx+52].forEach(px=>{c.beginPath();c.arc(px,cy,6,0,7);c.fillStyle="#1e293b";c.fill();});
+  txt(c,"Amperemeter",cx,cy-62,{s:14,a:"center",c:"#475569"});
+  if(hidden){c.save();c.translate(cx,cy+16);c.rotate(0.05);rr(c,-60,-62,120,142,5);c.fillStyle="#fde68a";c.fill();c.strokeStyle="#d97706";c.lineWidth=1.5;c.stroke();txt(c,"?",0,6,{s:54,a:"center",c:"#78350f",w:800});txt(c,"abgedeckt",0,46,{s:15,a:"center",c:"#78350f",w:700});c.restore();}
+}
+function display(c,x,y,w,label,value){
+  c.save();c.shadowColor="rgba(0,0,0,.15)";c.shadowBlur=6;c.shadowOffsetY=2;rr(c,x,y,w,76,10);c.fillStyle="#e2e8f0";c.fill();c.restore();
+  rr(c,x,y,w,76,10);c.strokeStyle="#94a3b8";c.lineWidth=1.5;c.stroke();
+  txt(c,label,x+10,y+20,{s:13,c:"#475569"});
+  rr(c,x+8,y+28,w-16,40,6);c.fillStyle="#0f172a";c.fill();
+  txt(c,value,x+w-16,y+58,{s:23,a:"right",c:"#4ade80",w:700,f:MONO});
+}
+function drawLamp(c,cx,cy,Tk,E){
+  rr(c,cx-80,cy+130,160,18,4);c.fillStyle="#a16207";c.fill();
+  rr(c,cx-35,cy+80,70,52,6);c.fillStyle="#475569";c.fill();
+  rr(c,cx-22,cy+46,44,36,4);c.fillStyle="#cbd5e1";c.fill();c.strokeStyle="#94a3b8";c.lineWidth=1.5;
+  for(let k=0;k<4;k++){c.beginPath();c.moveTo(cx-22,cy+52+k*8);c.lineTo(cx+22,cy+48+k*8);c.stroke();}
+  c.beginPath();c.arc(cx,cy,62,Math.PI*0.62,Math.PI*2.38);c.closePath();c.fillStyle="rgba(226,232,240,.35)";c.fill();c.strokeStyle="rgba(71,85,105,.75)";c.lineWidth=2.5;c.stroke();
+  c.strokeStyle="#64748b";c.lineWidth=2;c.beginPath();c.moveTo(cx-10,cy+48);c.lineTo(cx-15,cy+4);c.moveTo(cx+10,cy+48);c.lineTo(cx+15,cy+4);c.stroke();
+  const col=rgb(lerpStops(HOT,Tk));c.strokeStyle=col;c.lineWidth=2.5;c.beginPath();
+  for(let k=0;k<=28;k++){const f=k/28,x=cx-15+30*f,y=cy+4+6*Math.sin(f*Math.PI*14);k?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+  const g=clamp(Math.log10(1+E)/2.6,0,1.12),red=clamp((Tk-880)/900,0,1);
+  if(red>0||g>0){const R=26+130*g;const gr=c.createRadialGradient(cx,cy+4,2,cx,cy+4,R);
+    gr.addColorStop(0,`rgba(255,${Math.round(120+110*g)},${Math.round(60+90*g)},${0.25*red+0.6*g})`);gr.addColorStop(1,"rgba(255,220,140,0)");
+    c.fillStyle=gr;c.beginPath();c.arc(cx,cy+4,R,0,7);c.fill();}
+  c.beginPath();c.arc(cx-24,cy-26,12,Math.PI*1.1,Math.PI*1.6);c.strokeStyle="rgba(255,255,255,.9)";c.lineWidth=4;c.stroke();
+  [cx-20,cx+20].forEach(px=>{c.beginPath();c.arc(px,cy+148,5,0,7);c.fillStyle="#1e293b";c.fill();});
+}
+/* ================= Zeichnen: Szenen ================= */
+const wireY=(t,s)=>250+4*t*(1-t)*s*1.5;
+const DRAW={
+  start(c,r){
+    wire(c,[[90,502],[90,150],[420,150]],RED);wire(c,[[480,150],[560,150],[560,440],[600,440],[600,398]],RED);
+    wire(c,[[640,398],[640,570],[190,570],[190,502]],BLUE);
+    drawSupply(c,6,0.5,false);
+    c.fillStyle="#1e293b";[420,480].forEach(x=>{c.beginPath();c.arc(x,150,7,0,7);c.fill();});
+    const a=r.sw?0:-0.55;c.save();c.translate(420,150);c.rotate(a);rr(c,0,-4,66,8,4);c.fillStyle="#475569";c.fill();c.restore();
+    txt(c,"Schalter",450,118,{s:15,a:"center",c:"#475569"});txt(c,r.sw?"geschlossen":"offen",450,190,{s:15,a:"center",c:r.sw?"#059669":"#b91c1c",w:700});
+    drawLamp(c,620,250,r.Tf,r.E);txt(c,"Glühlampe 6 V",700,350,{s:14,c:"#475569"});
+  },
+  heat(c,r){
+    const h=!!r.myst,s=r.s,Tk=r.T+273;
+    wire(c,[[90,502],[90,150],[188,150]],RED);wire(c,[[292,150],[410,150],[410,250],[420,250]],RED);
+    wire(c,[[880,250],[930,250],[930,570],[190,570],[190,502]],BLUE);
+    [420,880].forEach(x=>{rr(c,x-55,522,110,16,4);c.fillStyle="#475569";c.fill();c.fillStyle="#94a3b8";c.fillRect(x-5,240,10,284);rr(c,x-13,236,26,24,4);c.fillStyle="#1e293b";c.fill();});
+    c.setLineDash([6,6]);c.strokeStyle="#94a3b8";c.lineWidth=1.5;c.beginPath();c.moveTo(430,250);c.lineTo(870,250);c.stroke();c.setLineDash([]);
+    // Maßstab
+    rr(c,668,240,40,92,3);c.fillStyle="#fffbeb";c.fill();c.strokeStyle="#a16207";c.lineWidth=1.2;c.stroke();
+    for(let mm=0;mm<=55;mm+=1){const y=250+mm*1.5;if(y>330)break;const L=mm%10===0?14:mm%5===0?9:5;c.beginPath();c.moveTo(668,y);c.lineTo(668+L,y);c.strokeStyle="#78350f";c.lineWidth=mm%5?0.7:1.2;c.stroke();if(mm%10===0)txt(c,String(mm),704,y+4,{s:10,a:"right",c:"#78350f"});}
+    txt(c,"mm",688,345,{s:11,a:"center",c:"#78350f"});
+    // Draht
+    const col=lerpStops(HOT,Tk);
+    if(Tk>850){c.save();c.strokeStyle=`rgba(255,90,30,${clamp((Tk-850)/250,0,.5)})`;c.lineWidth=12;c.beginPath();c.moveTo(420,250);c.quadraticCurveTo(650,250+3*s,880,250);c.stroke();c.restore();}
+    c.strokeStyle=rgb(col);c.lineWidth=3;c.beginPath();c.moveTo(420,250);c.quadraticCurveTo(650,250+3*s,880,250);c.stroke();
+    txt(c,"Konstantandraht, 50 cm",650,224,{s:14,a:"center",c:"#475569"});
+    // Temperaturfühler
+    const py=wireY((630-420)/460,s);c.strokeStyle="#334155";c.lineWidth=2.5;c.beginPath();c.moveTo(590,116);c.bezierCurveTo(590,170,620,190,628,py-10);c.stroke();
+    rr(c,622,py-12,12,12,2);c.fillStyle="#334155";c.fill();
+    display(c,505,40,170,"Thermometer",fmt(r.T,0)+" °C");
+    // Papierreiter
+    r.riders.forEach(p=>{const ch=clamp(p.c,0,1),cc=[Math.round(255-200*ch),Math.round(255-215*ch),Math.round(250-225*ch)];
+      let x=420+460*p.t,y=p.fall?p.y:wireY(p.t,s);c.save();c.translate(x,y);if(p.fall)c.rotate(p.landed?1.4:p.rot);
+      c.beginPath();c.moveTo(-9,10);c.lineTo(0,-2);c.lineTo(9,10);c.strokeStyle=rgb(cc);c.lineWidth=5;c.lineJoin="round";c.stroke();c.strokeStyle="rgba(71,85,105,.7)";c.lineWidth=1;c.stroke();c.restore();});
+    txt(c,"Papierreiter",420+460*0.25,300,{s:12,a:"center",c:"#64748b"});
+    drawSupply(c,Ueff(r),Ueff(r)/12,h);drawAmmeter(c,240,150,r.I,3,h);
+  },
+  light(c,r){
+    const h=!!r.myst;
+    wire(c,[[90,502],[90,150],[188,150]],RED);wire(c,[[292,150],[560,150],[560,440],[600,440],[600,398]],RED);
+    wire(c,[[640,398],[640,570],[190,570],[190,502]],BLUE);
+    drawLamp(c,620,250,r.Tf,r.E);
+    c.fillStyle="#94a3b8";c.fillRect(875,272,10,250);rr(c,840,518,80,14,4);c.fillStyle="#475569";c.fill();
+    rr(c,866,226,28,50,5);c.fillStyle="#1e293b";c.fill();c.beginPath();c.arc(866,251,10,0,7);c.fillStyle="#e2e8f0";c.fill();
+    c.strokeStyle="#334155";c.lineWidth=2.5;c.beginPath();c.moveTo(894,260);c.bezierCurveTo(940,300,900,420,850,470);c.stroke();
+    txt(c,"Sensor",880,214,{s:13,a:"center",c:"#475569"});
+    c.strokeStyle="#94a3b8";c.lineWidth=1.2;c.setLineDash([4,4]);c.beginPath();c.moveTo(684,251);c.lineTo(854,251);c.stroke();c.setLineDash([]);
+    txt(c,"25 cm",770,244,{s:13,a:"center",c:"#64748b"});
+    display(c,680,440,170,"Luxmeter",fmtE(r.E));
+    drawSupply(c,Ueff(r),Ueff(r)/7,h,2);drawAmmeter(c,240,150,r.I,1,h);
+  },
+  mag(c,r){
+    const h=!!r.myst;
+    wire(c,[[90,502],[90,150],[188,150]],RED);
+    if(r.pol>0){wire(c,[[292,150],[380,150],[380,510],[560,510],[560,488]],RED);wire(c,[[640,488],[640,530],[790,530],[790,570],[190,570],[190,502]],BLUE);}
+    else{wire(c,[[560,488],[560,530],[790,530],[790,570],[190,570],[190,502]],BLUE);wire(c,[[292,150],[380,150],[380,510],[640,510],[640,488]],RED);}
+    // Stativ
+    c.fillStyle="#94a3b8";c.fillRect(735,32,10,515);rr(c,695,545,90,14,4);c.fillStyle="#475569";c.fill();c.fillRect(596,30,149,8);
+    // Spule
+    rr(c,520,468,160,20,4);c.fillStyle="#a16207";c.fill();
+    if(r.core){c.fillStyle="#6b7280";c.fillRect(586,300,28,165);c.fillStyle="#9ca3af";c.fillRect(590,300,6,165);}
+    c.fillStyle="#1e293b";c.fillRect(530,310,140,10);c.fillRect(530,458,140,10);
+    c.fillStyle="#b45309";c.fillRect(540,320,120,138);
+    const n=r.N===300?12:r.N===600?20:32;c.strokeStyle="#78350f";c.lineWidth=1.2;
+    for(let k=0;k<n;k++){const y=322+k*134/n;c.beginPath();c.moveTo(540,y);c.lineTo(660,y+3);c.stroke();}
+    rr(c,560,374,80,30,6);c.fillStyle="rgba(255,255,255,.85)";c.fill();txt(c,"N = "+r.N,600,395,{s:16,a:"center",w:700});
+    [560,640].forEach(px=>{c.beginPath();c.arc(px,480,5,0,7);c.fillStyle="#1e293b";c.fill();});
+    if(r.pol<0)txt(c,"umgepolt",600,456,{s:13,a:"center",c:"#fef3c7",w:700});
+    // Kraftmesser + Magnet
+    const dy=clamp(r.Fd/1000*50,-60,50);
+    rr(c,572,40,56,66,8);c.fillStyle="#1e293b";c.fill();txt(c,"F",600,82,{s:22,a:"center",c:"#fff",w:800});
+    c.strokeStyle="#64748b";c.lineWidth=2;c.beginPath();c.moveTo(600,106);const sy0=112,sy1=196+dy;c.lineTo(600,sy0);
+    for(let k=0;k<=12;k++){c.lineTo(600+(k%2?9:-9),sy0+(sy1-sy0)*(k+.5)/13);}c.lineTo(600,sy1);c.lineTo(600,200+dy);c.stroke();
+    c.fillStyle="#16a34a";c.fillRect(586,200+dy,28,25);c.fillStyle=RED;c.fillRect(586,225+dy,28,25);
+    txt(c,"S",600,218+dy,{s:15,a:"center",c:"#fff",w:800});txt(c,"N",600,243+dy,{s:15,a:"center",c:"#fff",w:800});
+    c.strokeStyle="#334155";c.lineWidth=2.5;c.beginPath();c.moveTo(628,72);c.bezierCurveTo(700,72,700,250,780,262);c.stroke();
+    display(c,780,224,180,"Kraftmesser",fmt(r.Fd,0)+" mN");
+    // Kompass
+    const kx=880,ky=440;c.beginPath();c.arc(kx,ky,42,0,7);c.fillStyle="#fff";c.fill();c.strokeStyle="#334155";c.lineWidth=3;c.stroke();
+    txt(c,"N",kx,ky-27,{s:12,a:"center",c:"#475569",w:700});
+    c.save();c.translate(kx,ky);c.rotate(-r.ang);c.beginPath();c.moveTo(0,-32);c.lineTo(6,0);c.lineTo(-6,0);c.closePath();c.fillStyle=RED;c.fill();
+    c.beginPath();c.moveTo(0,32);c.lineTo(6,0);c.lineTo(-6,0);c.closePath();c.fillStyle="#94a3b8";c.fill();c.restore();
+    c.beginPath();c.arc(kx,ky,3,0,7);c.fillStyle="#0f172a";c.fill();txt(c,"Kompass",kx,ky+60,{s:13,a:"center",c:"#475569"});
+    drawSupply(c,Ueff(r),Ueff(r)/6,h);drawAmmeter(c,240,150,r.I,3,h);
+  },
+  chem(c,r){
+    const h=!!r.myst;
+    wire(c,[[90,502],[90,150],[188,150]],RED);wire(c,[[292,150],[340,150],[340,40],[730,40],[730,555],[650,555],[650,534]],RED);
+    wire(c,[[190,502],[190,555],[470,555],[470,534]],BLUE);
+    rr(c,420,520,280,16,4);c.fillStyle="#475569";c.fill();
+    const liq="rgba(147,197,253,.6)";
+    // Verbindungsrohr und Vorratsgefäß
+    const lvl=clamp(300-(r.VH+r.VO)*1.6,180,300);
+    rr(c,450,468,220,32,10);c.fillStyle=liq;c.fill();c.strokeStyle="rgba(71,85,105,.7)";c.lineWidth=2;c.stroke();
+    c.fillStyle="rgba(226,232,240,.5)";c.fillRect(548,170,24,300);c.fillStyle=liq;c.fillRect(548,lvl,24,470-lvl);c.strokeRect(548,170,24,300);
+    c.beginPath();c.arc(560,138,34,0,7);c.fillStyle="rgba(226,232,240,.5)";c.fill();c.stroke();
+    [[470,r.VH,"Wasserstoff","−"],[650,r.VO,"Sauerstoff","+"]].forEach(([x,V,nm,pl])=>{
+      const yG=100+V*6;
+      c.fillStyle="rgba(248,250,252,.95)";c.fillRect(x-20,96,40,yG-96);c.fillStyle=liq;c.fillRect(x-20,yG,40,470-yG);
+      rr(c,x-20,90,40,386,8);c.strokeStyle="rgba(71,85,105,.8)";c.lineWidth=2.5;c.stroke();
+      c.fillStyle="#475569";c.fillRect(x-4,70,8,22);c.fillRect(x-14,74,28,8);
+      for(let ml=0;ml<=50;ml++){const y=100+ml*6,L=ml%10===0?14:ml%5===0?10:5;c.beginPath();c.moveTo(x+20,y);c.lineTo(x+20-L,y);c.strokeStyle="#1e3a8a";c.lineWidth=ml%5?0.6:1.1;c.stroke();if(ml%10===0)txt(c,String(ml),x+24,y+4,{s:11,c:"#1e3a8a"});}
+      c.fillStyle="#9ca3af";c.fillRect(x-7,405,14,46);c.strokeStyle="#475569";c.lineWidth=2;c.beginPath();c.moveTo(x,451);c.lineTo(x,528);c.stroke();
+      txt(c,nm,x,62,{s:14,a:"center",c:"#475569",w:700});
+      c.beginPath();c.arc(x,528,9,0,7);c.fillStyle=pl==="+"?RED:BLUE;c.fill();txt(c,pl,x-22,534,{s:20,a:"center",c:pl==="+"?RED:BLUE,w:800});
+    });
+    txt(c,"ml",493,96,{s:11,c:"#1e3a8a"});
+    c.fillStyle="rgba(255,255,255,.85)";c.strokeStyle="rgba(71,85,105,.6)";c.lineWidth=1;
+    r.bub.forEach(b=>{c.beginPath();c.arc(b.x,b.y,b.r,0,7);c.fill();c.stroke();});
+    // Stoppuhr
+    c.save();c.shadowColor="rgba(0,0,0,.15)";c.shadowBlur=6;c.shadowOffsetY=2;rr(c,770,290,190,92,12);c.fillStyle="#e2e8f0";c.fill();c.restore();
+    txt(c,"Stoppuhr (Zeitraffer ×20)",782,310,{s:12.5,c:"#475569"});rr(c,780,318,170,52,8);c.fillStyle="#0f172a";c.fill();
+    txt(c,clock(r.time).replace(" min",""),930,357,{s:30,a:"right",c:"#4ade80",w:700,f:MONO});
+    c.beginPath();c.arc(796,344,7,0,7);c.fillStyle=r.run?"#22c55e":"#475569";c.fill();
+    txt(c,r.run?"Schalter geschlossen":"Schalter offen",865,402,{s:13,a:"center",c:r.run?"#059669":"#b91c1c",w:700});
+    drawSupply(c,Ueff(r),Ueff(r)/8,h);drawAmmeter(c,240,150,r.I,3,h);
+  },
+  fazit(c){
+    const box=(x,y,w,hh,col,t1,t2,t3)=>{c.save();c.shadowColor="rgba(0,0,0,.12)";c.shadowBlur=8;c.shadowOffsetY=3;rr(c,x,y,w,hh,16);c.fillStyle="#fff";c.fill();c.restore();
+      rr(c,x,y,w,hh,16);c.strokeStyle=col;c.lineWidth=3;c.stroke();txt(c,t1,x+w/2,y+36,{s:21,a:"center",w:800,c:col});txt(c,t2,x+w/2,y+66,{s:15.5,a:"center",c:"#334155"});txt(c,t3,x+w/2,y+92,{s:15.5,a:"center",c:"#0f172a",w:700});};
+    const arrow=(x1,y1,x2,y2)=>{c.strokeStyle="#94a3b8";c.lineWidth=4;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();const a=Math.atan2(y2-y1,x2-x1);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-14*Math.cos(a-.4),y2-14*Math.sin(a-.4));c.lineTo(x2-14*Math.cos(a+.4),y2-14*Math.sin(a+.4));c.closePath();c.fillStyle="#94a3b8";c.fill();};
+    arrow(400,270,330,170);arrow(600,270,670,170);arrow(400,330,330,430);arrow(600,330,670,430);
+    rr(c,370,245,260,110,18);c.fillStyle="#0f2a4a";c.fill();txt(c,"elektrischer Strom",500,292,{s:22,a:"center",c:"#fff",w:800});txt(c,"(unsichtbar)",500,322,{s:16,a:"center",c:"#cbd5e1"});
+    box(40,50,320,110,"#d97706","🔥 Wärmewirkung","Temperatur und Ausdehnung","→ Hitzdraht-Messgerät");
+    box(640,50,320,110,"#ca8a04","💡 Lichtwirkung","Helligkeit","→ grobe Anzeige");
+    box(40,440,320,110,"#2563eb","🧲 Magnetische Wirkung","Kraft, proportional zu I","→ Drehspul-Messgerät");
+    box(640,440,320,110,"#7c3aed","🧪 Chemische Wirkung","Gasmenge, proportional zu Q","→ Ladung messen");
+  }
+};
+const MAGPT={start:r=>[350,150],heat:r=>[560,wireY(140/460,r.s)],light:r=>[620,258],mag:r=>[600,390],chem:r=>[470,428]};
+function layout(){
+  if(!modelOn||cur.sc==="fazit")return{setup:{x:0,y:0,w:cw,h:ch}};
+  if(cw/ch>1.6)return{setup:{x:0,y:0,w:cw*0.5,h:ch},model:{x:cw*0.5,y:0,w:cw*0.5,h:ch},side:true};
+  const sh=Math.round(ch*0.46);return{setup:{x:0,y:0,w:cw,h:sh},model:{x:0,y:sh,w:cw,h:ch-sh}};
+}
+function render(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle="#f4f7fb";ctx.fillRect(0,0,cw,ch);
+  const L=layout(),R=L.setup,s=Math.min(R.w/1000,R.h/600),ox=R.x+(R.w-1000*s)/2,oy=R.y+(R.h-600*s)/2;
+  ctx.save();ctx.translate(ox,oy);ctx.scale(s,s);DRAW[cur.sc](ctx,cur);ctx.restore();
+  ov.style.right=(L.side?cw-R.w+10:10)+"px";
+  if(L.model){
+    const p=MAGPT[cur.sc](cur),mx=ox+p[0]*s,my=oy+p[1]*s,mr=Math.max(16,34*s),M=L.model,pad=8;
+    const box={x:M.x+pad,y:M.y+pad,w:M.w-2*pad,h:M.h-2*pad};
+    ctx.strokeStyle="rgba(124,58,237,.55)";ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();
+    if(L.side){ctx.moveTo(mx+mr*.7,my-mr*.7);ctx.lineTo(box.x,box.y+20);ctx.moveTo(mx+mr*.7,my+mr*.7);ctx.lineTo(box.x,box.y+box.h-20);}
+    else{ctx.moveTo(mx-mr*.7,my+mr*.7);ctx.lineTo(box.x+20,box.y);ctx.moveTo(mx+mr*.7,my+mr*.7);ctx.lineTo(box.x+box.w-20,box.y);}
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(mx,my,mr,0,7);ctx.fillStyle="rgba(124,58,237,.08)";ctx.fill();ctx.strokeStyle="#7c3aed";ctx.lineWidth=3;ctx.stroke();
+    drawModel(box);
+  }
+}
+
+/* ================= Teilchenmodell ================= */
+const MW=520,MH=330,VTH=60,ACC=115;
+let M=null;
+const ION_COL=[[293,[100,116,139]],[450,[160,110,95]],[800,[215,75,40]],[1500,[245,140,40]],[2700,[250,215,90]]];
+function modelParams(r){
+  switch(r.sc){
+    case"start":return{kind:"wire",title:"Teilchenmodell: Blick in den Kupferdraht",T:293,Irel:r.sw?0.8:0,dir:1};
+    case"heat":return{kind:"wire",title:"Teilchenmodell: Blick in den Konstantandraht",T:r.T+273,Irel:r.I/3,dir:1};
+    case"light":return{kind:"wire",title:"Teilchenmodell: Blick in die Glühwendel",T:r.Tf,Irel:r.I/0.55,dir:1,light:clamp(r.E/380,0,1.5)};
+    case"mag":return{kind:"mag",title:"Teilchenmodell: Blick in den Spulendraht",T:293+3*r.I*r.I,Irel:r.I/2,dir:r.pol,field:clamp(r.I/2,0,1)};
+    case"chem":return{kind:"chem",title:"Teilchenmodell: Blick in die Flüssigkeit",Irel:r.I/2.5};
+  }
+  return{kind:"wire",title:"Teilchenmodell",T:293,Irel:0,dir:1};
+}
+function buildModel(kind){
+  M={kind,t:0,ions:[],els:[],ph:[],bub:[],cnt:{e:0,h:0,o:0,ca:0,an:0}};
+  if(kind==="chem"){
+    for(let k=0;k<24;k++)M.ions.push({x:110+Math.random()*300,y:80+Math.random()*170,q:k%2?-1:1,vx:0,vy:0});
+    return;
+  }
+  const y0=kind==="mag"?100:48,y1=kind==="mag"?210:258,rows=kind==="mag"?2:4,dy=(y1-y0)/rows;
+  M.y0=y0;M.y1=y1;
+  for(let i=0;i<rows;i++)for(let j=0;j<10;j++)M.ions.push({x:26+52*j+(i%2?26:0)-(i%2&&j===9?520:0),y:y0+dy*(i+.5),p1:Math.random()*6.3,p2:Math.random()*6.3,w1:15+Math.random()*6,w2:15+Math.random()*6,kick:0,fl:0,cx:0,cy:0});
+  const nE=kind==="mag"?18:32;
+  for(let k=0;k<nE;k++){let x,y,ok=false,tries=0;while(!ok&&tries<50){x=Math.random()*MW;y=y0+8+Math.random()*(y1-y0-16);ok=M.ions.every(o=>Math.hypot(o.x-x,o.y-y)>22);tries++;}
+    const a=Math.random()*6.3;M.els.push({x,y,vx:VTH*Math.cos(a),vy:VTH*Math.sin(a)});}
+}
+function modelStep(dt){
+  const P=modelParams(cur);if(!M||M.kind!==P.kind)buildModel(P.kind);M.t+=dt;
+  if(P.kind==="chem")return chemStep(dt,P);
+  const AT=1+6*Math.sqrt(Math.max(0,P.T-293)/2400);
+  M.ions.forEach(o=>{o.kick*=Math.exp(-dt*1.1);o.fl*=Math.exp(-dt*6);const a=Math.min(9.5,AT+o.kick);o.cx=o.x+a*Math.sin(o.w1*M.t+o.p1);o.cy=o.y+a*Math.cos(o.w2*M.t+o.p2);});
+  const acc=ACC*P.Irel*P.dir;
+  M.els.forEach(e=>{
+    e.vx+=acc*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;
+    if(e.x>MW)e.x-=MW;if(e.x<0)e.x+=MW;
+    if(e.y<M.y0+6){e.y=M.y0+6;e.vy=Math.abs(e.vy);}if(e.y>M.y1-6){e.y=M.y1-6;e.vy=-Math.abs(e.vy);}
+    for(const o of M.ions){let dx=e.x-o.cx;if(dx>MW/2)dx-=MW;if(dx<-MW/2)dx+=MW;const dy=e.y-o.cy,d=Math.hypot(dx,dy);
+      if(d<18&&d>0.01){const nx=dx/d,ny=dy/d;if(e.vx*nx+e.vy*ny<0){
+        const E=e.vx*e.vx+e.vy*e.vy,tr=Math.max(0,E-VTH*VTH);
+        if(tr>300){o.kick=Math.min(5,o.kick+tr/7000);o.fl=1;}
+        let rx=e.vx-2*(e.vx*nx+e.vy*ny)*nx,ry=e.vy-2*(e.vx*nx+e.vy*ny)*ny;const ang=Math.atan2(ry,rx)+(Math.random()-.5)*1.2;
+        e.vx=VTH*Math.cos(ang);e.vy=VTH*Math.sin(ang);e.x=o.cx+nx*18;e.y=o.cy+ny*18;}
+        break;}}
+    const sp=Math.hypot(e.vx,e.vy);if(sp>260){e.vx*=260/sp;e.vy*=260/sp;}
+  });
+  if(P.light&&Math.random()<dt*30*P.light){const o=M.ions[Math.floor(Math.random()*M.ions.length)];const a=Math.random()*6.3;M.ph.push({x:o.cx,y:o.cy,a,life:0});}
+  M.ph.forEach(p=>{p.life+=dt;p.x+=130*Math.cos(p.a)*dt;p.y+=130*Math.sin(p.a)*dt;});M.ph=M.ph.filter(p=>p.life<1);
+}
+function chemStep(dt,P){
+  const I=P.Irel;
+  M.ions.forEach(o=>{
+    o.vx+=(Math.random()-.5)*400*dt;o.vy+=(Math.random()-.5)*400*dt;o.vx*=Math.exp(-dt*2);o.vy*=Math.exp(-dt*2);
+    const drift=-o.q*95*I;o.x+=(o.vx+drift)*dt;o.y+=o.vy*dt;
+    if(o.y<80){o.y=80;o.vy=Math.abs(o.vy);}if(o.y>250){o.y=250;o.vy=-Math.abs(o.vy);}
+    if(o.x<84){if(o.q>0&&I>0.02){M.cnt.ca++;M.cnt.e++;if(M.cnt.ca%2===0){M.cnt.h++;M.bub.push({x:80+Math.random()*6,y:o.y,r:6,k:0});}o.x=250+Math.random()*140;o.y=80+Math.random()*170;}else{o.x=84;o.vx=Math.abs(o.vx);}}
+    if(o.x>436){if(o.q<0&&I>0.02){M.cnt.an++;if(M.cnt.an%4===0){M.cnt.o++;M.bub.push({x:440-Math.random()*6,y:o.y,r:7,k:1});}o.x=130+Math.random()*140;o.y=80+Math.random()*170;}else{o.x=436;o.vx=-Math.abs(o.vx);}}
+  });
+  M.bub.forEach(b=>{b.y-=60*dt;});M.bub=M.bub.filter(b=>b.y>78);
+  M.eoff=(M.eoff||0)+dt*60*I;
+}
+function drawModel(B){
+  const c=ctx,P=modelParams(cur);if(!M||M.kind!==P.kind)buildModel(P.kind);
+  c.save();c.shadowColor="rgba(0,0,0,.15)";c.shadowBlur=8;rr(c,B.x,B.y,B.w,B.h,14);c.fillStyle="#fff";c.fill();c.restore();
+  rr(c,B.x,B.y,B.w,B.h,14);c.strokeStyle="#7c3aed";c.lineWidth=2;c.stroke();
+  const s=Math.min(B.w/MW,B.h/MH),ox=B.x+(B.w-MW*s)/2,oy=B.y+(B.h-MH*s)/2;
+  c.save();rr(c,B.x,B.y,B.w,B.h,14);c.clip();c.translate(ox,oy);c.scale(s,s);
+  txt(c,P.title,MW/2,22,{s:15,a:"center",w:800,c:"#5b21b6"});
+  if(P.kind==="chem")drawChemModel(c,P);else drawWireModel(c,P);
+  c.restore();
+}
+function drawWireModel(c,P){
+  const warm=clamp((P.T-293)/900,0,1);
+  c.fillStyle=`rgb(${Math.round(241+14*warm)},${Math.round(245-30*warm)},${Math.round(249-60*warm)})`;c.fillRect(0,M.y0,MW,M.y1-M.y0);
+  c.strokeStyle="#94a3b8";c.lineWidth=2;c.beginPath();c.moveTo(0,M.y0);c.lineTo(MW,M.y0);c.moveTo(0,M.y1);c.lineTo(MW,M.y1);c.stroke();
+  const ic=rgb(lerpStops(ION_COL,P.T));
+  c.save();c.beginPath();c.rect(0,M.y0-30,MW,M.y1-M.y0+60);c.clip();
+  M.ions.forEach(o=>{
+    if(o.fl>0.05){c.beginPath();c.arc(o.cx,o.cy,13+9*o.fl,0,7);c.fillStyle=`rgba(249,115,22,${0.45*o.fl})`;c.fill();}
+    c.beginPath();c.arc(o.cx,o.cy,12,0,7);c.fillStyle=ic;c.fill();txt(c,"+",o.cx,o.cy+5.5,{s:16,a:"center",c:"#fff",w:800});
+  });
+  M.ph.forEach(p=>{const al=1-p.life;c.save();c.translate(p.x,p.y);c.rotate(p.a);c.strokeStyle=`rgba(234,179,8,${al})`;c.lineWidth=2.5;c.beginPath();for(let k=0;k<=16;k++){const x=k*1.6,y=4*Math.sin(k*0.8);k?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();c.restore();});
+  M.els.forEach(e=>{c.beginPath();c.arc(e.x,e.y,5,0,7);c.fillStyle=BLUE;c.fill();});
+  c.restore();
+  if(P.kind==="mag"){
+    const f=P.field,up=P.dir>0?"⊗":"⊙",dn=P.dir>0?"⊙":"⊗";
+    if(f>0.01){for(let k=0;k<9;k++){const x=30+57*k;
+      txt(c,up,x,M.y0-14,{s:14+12*f,a:"center",c:`rgba(37,99,235,${0.25+0.75*f})`,w:700,b:"middle"});
+      txt(c,dn,x,M.y1+18,{s:14+12*f,a:"center",c:`rgba(37,99,235,${0.25+0.75*f})`,w:700,b:"middle"});}
+      txt(c,"Magnetfeld",MW-6,M.y0-38,{s:12,a:"right",c:"#2563eb",w:700});}
+    else txt(c,"kein Magnetfeld",MW/2,M.y0-14,{s:13,a:"center",c:"#94a3b8",w:600,b:"middle"});
+  }
+  const ly=P.kind==="mag"?M.y1+50:M.y1+26;
+  if(P.Irel>0.01){const d=P.dir>0;txt(c,d?"Elektronen wandern zum Pluspol  →":"←  Elektronen wandern zum Pluspol",MW/2,ly,{s:13.5,a:"center",c:"#1d4ed8",w:700});}
+  else txt(c,"kein Strom: Elektronen bewegen sich nur ungeordnet",MW/2,ly,{s:13.5,a:"center",c:"#475569",w:600});
+  const ly2=ly+24;
+  c.beginPath();c.arc(14,ly2-5,8,0,7);c.fillStyle=ic;c.fill();txt(c,"+",14,ly2,{s:12,a:"center",c:"#fff",w:800});
+  txt(c,"Atomrumpf (fest, schwingt)",28,ly2,{s:12.5,c:"#334155"});
+  c.beginPath();c.arc(212,ly2-5,5,0,7);c.fillStyle=BLUE;c.fill();txt(c,"Elektron (frei beweglich)",222,ly2,{s:12.5,c:"#334155"});
+  c.beginPath();c.arc(392,ly2-5,8,0,7);c.fillStyle="rgba(249,115,22,.55)";c.fill();txt(c,"Stoß",404,ly2,{s:12.5,c:"#334155"});
+  if(P.light)txt(c,"〰 Licht",460,ly2,{s:12.5,c:"#a16207",w:700});
+}
+function drawChemModel(c,P){
+  c.fillStyle="rgba(147,197,253,.35)";c.fillRect(70,70,380,190);
+  [[60,BLUE,"Minuspol −"],[460,RED,"Pluspol +"]].forEach(([x,col,l])=>{c.fillStyle="#9ca3af";c.fillRect(x-10,70,20,190);c.strokeStyle="#475569";c.lineWidth=4;c.beginPath();c.moveTo(x,70);c.lineTo(x,36);c.stroke();txt(c,l,x,276,{s:13,a:"center",c:col,w:800});});
+  // Elektronen in den Zuleitungen
+  const off=(M.eoff||0)%12;c.fillStyle=BLUE;
+  for(let k=0;k<4;k++){c.beginPath();c.arc(60,36+((k*12+off)%36),3.5,0,7);c.fill();c.beginPath();c.arc(460,70-((k*12+off)%36),3.5,0,7);c.fill();}
+  if(P.Irel>0.01){txt(c,"e⁻ ↓",82,48,{s:12,c:"#1d4ed8",w:700});txt(c,"e⁻ ↑",438,48,{s:12,a:"right",c:"#1d4ed8",w:700});}
+  M.bub.forEach(b=>{c.beginPath();c.arc(b.x,b.y,b.r,0,7);c.fillStyle="rgba(255,255,255,.9)";c.fill();c.strokeStyle="#64748b";c.lineWidth=1;c.stroke();});
+  M.ions.forEach(o=>{c.beginPath();c.arc(o.x,o.y,9,0,7);c.fillStyle=o.q>0?"#dc2626":"#7c3aed";c.fill();txt(c,o.q>0?"+":"−",o.x,o.y+5,{s:14,a:"center",c:"#fff",w:800});});
+  const y=300;
+  c.beginPath();c.arc(12,y-5,7,0,7);c.fillStyle="#dc2626";c.fill();txt(c,"positives Ion",24,y,{s:12.5,c:"#334155"});
+  c.beginPath();c.arc(124,y-5,7,0,7);c.fillStyle="#7c3aed";c.fill();txt(c,"negatives Ion",136,y,{s:12.5,c:"#334155"});
+  c.beginPath();c.arc(236,y-5,5,0,7);c.fillStyle=BLUE;c.fill();txt(c,"Elektron",246,y,{s:12.5,c:"#334155"});
+  c.beginPath();c.arc(318,y-5,6,0,7);c.strokeStyle="#64748b";c.lineWidth=1;c.stroke();txt(c,"Gasbläschen",330,y,{s:12.5,c:"#334155"});
+  txt(c,`Elektronen durch den Stromkreis: ${M.cnt.e}   ·   H₂: ${M.cnt.h}   ·   O₂: ${M.cnt.o}`,MW/2,y+24,{s:12.5,a:"center",c:"#1e293b",w:700});
+}
+
+/* ================= Bedienfeld ================= */
+function controlsHTML(){
+  const r=cur,cfg=r.cfg;let h="";
+  if(r.sc==="start")h+=`<div class="btns"><button class="btn primary" data-act="sw">${r.sw?"Schalter öffnen":"Schalter schließen"}</button></div>`;
+  if(cfg.u){const[a,b,st]=cfg.u,d=st<0.5?2:1;
+    h+=`<div class="lbl-s">Spannung am Netzgerät: <span id="uVal">${r.myst?"abgedeckt":fmt(r.U,d)+" V"}</span></div>
+    <input id="uSlider" type="range" min="${a}" max="${b}" step="${st}" value="${r.U}" ${r.myst?"disabled":""}>
+    <div class="btns"><button class="btn" data-act="u:-1" ${r.myst?"disabled":""}>− ${fmt(st,d)} V</button><button class="btn" data-act="u:1" ${r.myst?"disabled":""}>+ ${fmt(st,d)} V</button><button class="btn" data-act="u0" ${r.myst?"disabled":""}>0 V</button></div>`;}
+  if(r.sc==="heat")h+=`<div class="btns"><button class="btn" data-act="riders">Neue Papierreiter aufsetzen</button></div>`;
+  if(r.sc==="mag")h+=`<div class="lbl-s">Spule</div><div class="seg" style="margin-bottom:8px">${[300,600,1200].map(n=>`<button class="btn ${r.N===n?"on":""}" data-act="n:${n}">${n} Windungen</button>`).join("")}</div>
+    <div class="btns"><button class="btn ${r.core?"on":""}" data-act="core">${r.core?"Eisenkern herausnehmen":"Eisenkern einsetzen"}</button><button class="btn ${r.pol<0?"on":""}" data-act="pol">Umpolen</button></div>`;
+  if(r.sc==="chem")h+=`<div class="btns"><button class="btn primary" data-act="run">${r.run?"⏸ Schalter öffnen (Uhr hält an)":"▶ Schalter schließen (Uhr läuft)"}</button><button class="btn" data-act="clk0">Gas ablassen, Uhr auf 0</button></div>`;
+  h+=`<div class="btns" style="margin-top:6px"><button class="btn danger" data-act="reset">Versuch zurücksetzen</button></div><div class="msg" id="msg">${r.msg||"&nbsp;"}</div>`;
+  return h;
+}
+function buildPanel(){
+  const cfg=cur.cfg;let h=`<h2>${cfg.title}</h2><p class="lead">${cfg.lead}</p>`;
+  if(cfg.html)h+=cfg.html;
+  if(cfg.summary)h+=summaryHTML();
+  if(cfg.steps)h+=`<div class="card"><h3>Versuchsanleitung</h3><ol class="steps">${cfg.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`;
+  if(!cfg.summary)h+=`<div class="card" id="ctrl">${controlsHTML()}</div>`;
+  if(cfg.table)h+=`<div class="card"><h3>Messtabelle</h3><div class="btns"><button class="btn primary" data-act="record">Messwert aufnehmen</button><button class="btn danger" data-act="clearrows">Tabelle leeren</button></div><div id="tbl"></div></div>`;
+  if(cfg.jd)h+=`<div class="card"><h3>Je-desto-Sätze bilden</h3><p class="small" style="margin-top:0">Nutze deine Messtabelle und das Diagramm. Welche Größe hast du verändert, welche hast du gemessen?</p>${cfg.jd.slots.map((p,ji)=>jdHTML(cfg,p,ji)).join("")}</div>`;
+  if(cfg.qs)h+=`<div class="card"><h3>Beobachten und erklären</h3>${cfg.qs.map((q,qi)=>`<div class="q" data-qi="${qi}"><p>${qi+1}. ${q.q}</p>${q.o.map((o,oi)=>`<button class="opt" data-act="ans:${qi}:${oi}">${o}</button>`).join("")}<div class="fb"></div></div>`).join("")}</div>`;
+  if(cfg.model)h+=`<div class="card model"><h3>🔬 Erklären mit dem Teilchenmodell</h3><p style="margin:0 0 6px;font-weight:600">${cfg.model.q}</p>
+    <div class="btns"><button class="btn ${modelOn?"on":""}" data-act="model" id="mBtn">${modelOn?"Modell ausblenden":"Modell anzeigen"}</button></div>
+    <div class="lbl-s">Darauf kannst du achten:</div><ul class="tips">${cfg.model.tips.map(t=>`<li>${t}</li>`).join("")}</ul>
+    <textarea id="expl" placeholder="Meine Erklärung mit dem Teilchenmodell …">${esc(LS.get("expl."+cfg.id,""))}</textarea>
+    <details><summary>Beispiel-Erklärung (erst nach deiner eigenen öffnen)</summary><p>${cfg.model.ex}</p></details></div>`;
+  if(cfg.myst)h+=`<div class="card myst"><h3>🕵️ Messen ohne Amperemeter</h3><p style="margin:0 0 8px">Ein unbekannter Strom fließt. Netzgerät und Amperemeter sind abgedeckt. Bestimme die Stromstärke <b>nur über die Wirkung</b> – mit Hilfe deiner Messtabelle oder deines Diagramms.${cfg.scene==="chem"?" Tipp: Miss das Gasvolumen nach einer festen Zeit.":""}${cfg.scene==="mag"?" Tipp: Wähle eine Spule, mit der du schon gemessen hast.":""}</p><div id="mystBox"></div></div>`;
+  if(cfg.info)h+=`<div class="card"><details><summary>Erklärung (erst nach dem Versuch öffnen)</summary><p>${cfg.info}</p></details>${cfg.merk?`<details><summary>Merksatz</summary><div class="merk">${cfg.merk}</div></details>`:""}</div>`;
+  else if(cfg.merk)h+=`<div class="card"><details><summary>Merksatz</summary><div class="merk">${cfg.merk}</div></details></div>`;
+  h+=`<div class="card"><h3>Meine Notizen</h3><textarea id="notes" placeholder="Beobachtungen, eigene Je-desto-Sätze, Fragen …">${esc(LS.get("notes."+cfg.id,""))}</textarea></div>`;
+  if(cfg.summary)h+=`<div class="card"><h3>Daten</h3><p class="small">Alle Tabellen, Antworten und Notizen sind nur auf diesem Gerät im Browser gespeichert.</p><button class="btn danger" data-act="wipe">Alle meine Daten löschen</button></div>`;
+  panel.innerHTML=h+(window.LEGAL_LINKS||"");
+  if(cfg.table)renderTable();
+  if(cfg.myst)renderMyst();
+  restoreAnswers();
+  [["notes","notes."],["expl","expl."]].forEach(([id,k])=>{const ta=$("#"+id);if(ta)ta.addEventListener("input",()=>LS.set(k+cfg.id,ta.value));});
+  bindSlider();
+}
+function bindSlider(){const sl=$("#uSlider");if(sl)sl.addEventListener("input",()=>setU(+sl.value));}
+function setU(v){const r=cur,[a,b,st]=r.cfg.u;r.U=clamp(Math.round(v/st)*st,a,b);const sl=$("#uSlider"),lb=$("#uVal");if(sl&&+sl.value!==r.U)sl.value=r.U;if(lb)lb.textContent=fmt(r.U,st<0.5?2:1)+" V";
+  if(r.sc==="light"&&r.U>6)setMsg("Achtung: Die Nennspannung der Lampe (6 V) ist überschritten – die Lampe altert dann sehr schnell.");}
+function refreshControls(){const c=$("#ctrl");if(c){c.innerHTML=controlsHTML();bindSlider();}}
+function setMsg(t){if(!cur)return;cur.msg=t;const m=$("#msg");if(m)m.textContent=t;}
+function jdHTML(cfg,prompt,ji){
+  const J=cfg.jd,saved=LS.get(`jd.${cfg.id}.${ji}`,null);
+  const sel=(p,opts)=>`<select data-p="${p}"><option value="">…</option>${opts.map(o=>`<option ${saved&&saved.v[p]===o?"selected":""}>${o}</option>`).join("")}</select>`;
+  return `<div class="jd" data-ji="${ji}" style="margin-bottom:12px"><p class="prompt">${prompt}</p>Je ${sel(0,A1)} ${sel(1,J.qty)}, desto ${sel(2,A2)} ${sel(3,J.res)}. <button class="btn" data-act="jd:${ji}" style="margin-left:4px">Prüfen</button><div class="fb ${saved&&saved.ok?"ok":""}">${saved&&saved.ok?"✓ Richtig! "+saved.h:""}</div></div>`;
+}
+function checkJD(ji){
+  const cfg=cur.cfg,J=cfg.jd,box=panel.querySelector(`.jd[data-ji="${ji}"]`),fb=box.querySelector(".fb");
+  const v=[...box.querySelectorAll("select")].map(s=>s.value);const no=t=>{fb.className="fb no";fb.textContent=t;LS.set(`jd.${cfg.id}.${ji}`,{v,ok:false});};
+  if(v.some(x=>!x))return no("Fülle zuerst alle Lücken aus.");
+  if(!FIT[v[1]].includes(v[0])||!FIT[v[3]].includes(v[2]))return no("Prüfe die Adjektive: Passt das Wort zur Größe? Man sagt zum Beispiel „je länger die Zeit“, „desto höher die Temperatur“ oder „desto heller leuchtet die Lampe“.");
+  const near=(J.near||[]).find(n=>n.q===v[1]);if(near)return no(near.msg);
+  const m=J.ok.find(o=>o.q===v[1]&&o.r.includes(v[3]));
+  if(!m)return no("Diese Kombination passt nicht zu deinem Versuch. Welche Größe hast du verändert, welche hast du gemessen?");
+  if(ADJ[v[0]]*ADJ[v[2]]!==m.rel)return no("Die Größen stimmen, aber die Richtung nicht. Schau in deine Tabelle: Was passiert mit der gemessenen Größe, wenn die veränderte Größe wächst?");
+  const text=`Je ${v[0]} ${v[1]}, desto ${v[2]} ${v[3]}.`;
+  const dup=J.slots.some((_,k)=>k!==ji&&(LS.get(`jd.${cfg.id}.${k}`,{})||{}).text===text&&LS.get(`jd.${cfg.id}.${k}`,{}).ok);
+  if(dup)return no("Der Satz stimmt – aber du hast ihn schon. Hier ist ein anderer Zusammenhang gefragt.");
+  fb.className="fb ok";fb.textContent="✓ Richtig! "+m.h;
+  LS.set(`jd.${cfg.id}.${ji}`,{v,ok:true,text,h:m.h});
+}
+function answer(qi,oi){
+  const q=cur.cfg.qs[qi],box=panel.querySelector(`.q[data-qi="${qi}"]`),fb=box.querySelector(".fb"),btn=box.querySelectorAll(".opt")[oi];
+  if(oi===q.c){box.querySelectorAll(".opt").forEach(b=>b.classList.remove("wrong"));btn.classList.add("right");fb.className="fb ok";fb.innerHTML="✓ Richtig! "+(q.ex||"");const a=LS.get("ans."+cur.cfg.id,{});a[qi]=oi;LS.set("ans."+cur.cfg.id,a);}
+  else{btn.classList.add("wrong");fb.className="fb no";fb.textContent="Leider nicht. Beobachte den Versuch noch einmal genau und versuche es erneut.";}
+}
+function restoreAnswers(){
+  const a=LS.get("ans."+cur.cfg.id,{});Object.keys(a).forEach(qi=>{const q=cur.cfg.qs&&cur.cfg.qs[qi];if(!q)return;const box=panel.querySelector(`.q[data-qi="${qi}"]`);if(!box)return;
+    box.querySelectorAll(".opt")[q.c].classList.add("right");const fb=box.querySelector(".fb");fb.className="fb ok";fb.innerHTML="✓ Richtig! "+(q.ex||"");});
+}
+/* ---------- Tabelle und Diagramm ---------- */
+const PAL=["#2563eb","#dc2626","#059669","#d97706","#7c3aed","#0891b2","#be185d"];
+function rowsOf(id){return LS.get("rows."+id,[]);}
+function renderTable(){
+  const cfg=cur.cfg,T=cfg.table,rows=rowsOf(cfg.id),el=$("#tbl");
+  let h=`<table><thead><tr><th>Nr.</th>${T.cols.map(c=>`<th>${c.l}</th>`).join("")}<th></th></tr></thead><tbody>`;
+  if(!rows.length)h+=`<tr><td colspan="${T.cols.length+2}" class="small">Noch keine Messwerte.</td></tr>`;
+  rows.forEach((row,i)=>{h+=`<tr><td>${i+1}</td>${T.cols.map(c=>`<td>${c.txt?esc(row[c.k]):fmt(row[c.k],c.d)}</td>`).join("")}<td><button class="x" data-act="delrow:${i}" aria-label="Zeile löschen">×</button></td></tr>`;});
+  h+=`</tbody></table>`;
+  if(rows.length){const ai=clamp(LS.get("axis."+cfg.id,0)|0,0,T.axes.length-1);
+    if(T.axes.length>1)h+=`<div class="seg axis">${T.axes.map((a,k)=>`<button class="btn ${k===ai?"on":""}" data-act="axis:${k}">${a.n}</button>`).join("")}</div>`;
+    h+=chartSVG(rows,T,T.axes[ai]);}
+  el.innerHTML=h;
+}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*p>=v)return m*p;return 10*p;}
+function chartSVG(rows,T,A){
+  const Wd=360,Hd=250,L=50,B=42,Rr=12,Tt=12,xs=rows.map(r=>r[A.x]),ys=rows.map(r=>r[A.y]);
+  const xm=niceMax(Math.max(...xs,0)*1.05),ymx=Math.max(...ys,0),ymn=Math.min(...ys,0);
+  const yTop=ymx>0?niceMax(ymx*1.05):0,yBot=ymn<0?-niceMax(-ymn*1.05):0,ySpan=(yTop-yBot)||1;
+  const X=v=>L+(Wd-L-Rr)*v/xm,Y=v=>Hd-B-(Hd-B-Tt)*(v-yBot)/ySpan;
+  const dx=xm<5?(xm<1?2:1):0,dy=ySpan<5?1:0;
+  let g=`<svg class="chart" viewBox="0 0 ${Wd} ${Hd}" role="img" aria-label="${esc(A.yl)} über ${esc(A.xl)}"><rect width="${Wd}" height="${Hd}" fill="#fff"/>`;
+  for(let k=0;k<=5;k++){const xv=xm*k/5,yv=yBot+ySpan*k/5;
+    g+=`<line x1="${X(xv)}" y1="${Tt}" x2="${X(xv)}" y2="${Hd-B}" stroke="#eef2f7"/><line x1="${L}" y1="${Y(yv)}" x2="${Wd-Rr}" y2="${Y(yv)}" stroke="#eef2f7"/>`;
+    g+=`<text x="${X(xv)}" y="${Hd-B+16}" font-size="11" text-anchor="middle" fill="#475569">${fmt(xv,dx)}</text><text x="${L-6}" y="${Y(yv)+4}" font-size="11" text-anchor="end" fill="#475569">${fmt(yv,dy)}</text>`;}
+  g+=`<line x1="${L}" y1="${Y(0)}" x2="${Wd-Rr}" y2="${Y(0)}" stroke="#334155" stroke-width="1.5"/><line x1="${L}" y1="${Tt}" x2="${L}" y2="${Hd-B}" stroke="#334155" stroke-width="1.5"/>`;
+  g+=`<text x="${(L+Wd-Rr)/2}" y="${Hd-6}" font-size="12.5" text-anchor="middle" fill="#0f172a" font-weight="600">${A.xl}</text><text transform="translate(13,${(Tt+Hd-B)/2}) rotate(-90)" font-size="12.5" text-anchor="middle" fill="#0f172a" font-weight="600">${A.yl}</text>`;
+  const groups=[];rows.forEach(r=>{const gk=T.g?T.g(r):"";if(!groups.includes(gk))groups.push(gk);});
+  rows.forEach(r=>{const gi=groups.indexOf(T.g?T.g(r):"");g+=`<circle cx="${X(r[A.x]).toFixed(1)}" cy="${Y(r[A.y]).toFixed(1)}" r="5" fill="${PAL[gi%PAL.length]}" stroke="#fff" stroke-width="1.5"/>`;});
+  g+="</svg>";
+  if(T.g&&groups.length)g+=`<div class="leg">${groups.map((k,i)=>`<span><span class="cl" style="background:${PAL[i%PAL.length]}"></span>${esc(k)}</span>`).join("")}</div>`;
+  return g;
+}
+function record(){
+  const r=cur,id=r.cfg.id;
+  if(r.myst){setMsg("Beim Rätselstrom werden keine Messwerte aufgenommen.");return;}
+  let row=null;
+  switch(r.sc){
+    case"heat":if(Math.abs(heatTs(r.I)-r.T)>1.5){setMsg("Warte, bis sich die Temperatur nicht mehr ändert – erst dann ablesen!");return;}
+      row={u:r.U,i:r2(r.I),t:Math.round(r.T),s:r1(r.s)};break;
+    case"light":row={u:r.U,i:r2(r.I),e:r.E<100?r1(r.E):Math.round(r.E)};break;
+    case"mag":if(Math.abs(r.F-r.Fd)>2){setMsg("Warte, bis der Magnet ruhig hängt – erst dann ablesen!");return;}
+      row={n:r.N,k:r.core?"mit":"ohne",i:r2(r.I),f:Math.round(r.Fd)};break;
+    case"chem":if(r.time<1){setMsg("Schließe zuerst den Schalter und lass die Uhr laufen.");return;}
+      row={i:r2(r.Q/r.time),t:Math.round(r.time),q:Math.round(r.Q),vh:r1(r.VH),vo:r1(r.VO)};break;
+  }
+  const rows=rowsOf(id);rows.push(row);LS.set("rows."+id,rows);renderTable();
+  setMsg(`Messwert ${rows.length} aufgenommen.`+(r.sc==="chem"&&r.changed?" Achtung: Du hast die Spannung während der Messung verändert – I ist hier ein Mittelwert.":""));
+}
+/* ---------- Rätselstrom ---------- */
+function renderMyst(){
+  const r=cur,b=$("#mystBox");if(!b)return;
+  if(!r.myst){b.innerHTML=`<button class="btn primary" data-act="myst">Rätselstrom einschalten</button>`;return;}
+  b.innerHTML=`<div style="margin-bottom:8px">Meine Bestimmung: I ≈ <input id="mystIn" type="text" inputmode="decimal" placeholder="z. B. 1,2" value="${esc(r.myst.guess||"")}"> A</div>
+   <div class="btns"><button class="btn primary" data-act="mystcheck">Prüfen</button><button class="btn" data-act="mystshow">Auflösen</button><button class="btn" data-act="mystend">Rätsel beenden</button></div><div class="fb" id="mystFb"></div>`;
+  const inp=$("#mystIn");inp.addEventListener("input",()=>{r.myst.guess=inp.value;});
+}
+function mystI(r){const save=r.run;if(r.sc==="chem")r.run=true;const I=current(r);r.run=save;return I;}
+function mystCheck(show){
+  const r=cur,fb=$("#mystFb"),I=mystI(r);
+  if(show){fb.className="fb ok";fb.textContent=`Die Stromstärke beträgt ${fmt(I,2)} A.`;return;}
+  const g=parseFloat(String($("#mystIn").value).replace(",","."));
+  if(!isFinite(g)){fb.className="fb no";fb.textContent="Gib eine Zahl ein, z. B. 1,2.";return;}
+  const tol=Math.max(0.06,0.1*I);
+  if(Math.abs(g-I)<=tol){fb.className="fb ok";fb.textContent=`✓ Sehr gut! Die Stromstärke beträgt ${fmt(I,2)} A. Du hast die Wirkung als Messgerät benutzt – genau so funktionieren Strommessgeräte.`;}
+  else{fb.className="fb no";fb.textContent=`Noch nicht – dein Wert ist zu ${g>I?"groß":"klein"}. Lies noch einmal genau ab und vergleiche mit deiner Tabelle oder dem Diagramm.`;}
+}
+/* ---------- Fazit ---------- */
+function summaryHTML(){
+  let h=`<div class="card"><h3>Überblick</h3><table class="ov-tbl"><tr><th>Wirkung</th><th>Was ändert sich?</th><th>Nutzung zum Messen</th></tr>
+   <tr><td>Wärme</td><td>Temperatur, Länge des Drahts</td><td>Hitzdraht-Messgerät</td></tr>
+   <tr><td>Licht</td><td>Helligkeit</td><td>nur grobe Anzeige</td></tr>
+   <tr><td>Magnetisch</td><td>Kraft (F ~ I)</td><td>Drehspul-Messgerät – die meisten Amperemeter</td></tr>
+   <tr><td>Chemisch</td><td>Gasmenge (V ~ Q = I · t)</td><td>Ladung messen</td></tr></table></div>`;
+  STATIONS.filter(s=>s.jd).forEach(s=>{const jds=s.jd.slots.map((_,ji)=>LS.get(`jd.${s.id}.${ji}`,null)).filter(x=>x&&x.ok);
+    h+=`<div class="card"><h3>${s.title}</h3>${jds.length?`<p class="small" style="margin:0 0 4px">Deine Je-desto-Sätze:</p><ul style="margin:0 0 6px;padding-left:20px">${jds.map(x=>`<li><b>${esc(x.text)}</b></li>`).join("")}</ul>`:`<p class="small" style="margin:0 0 4px">Noch keine Je-desto-Sätze – bilde sie im Versuch.</p>`}<details><summary>Merksatz aufdecken</summary><div class="merk">${s.merk}</div></details></div>`;});
+  return h;
+}
+/* ================= Ereignisse ================= */
+panel.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-act]");if(!b||b.disabled)return;
+  const[act,a1,a2]=b.dataset.act.split(":"),r=cur;
+  switch(act){
+    case"sw":r.sw=!r.sw;refreshControls();setMsg(r.sw?"Schalter geschlossen – der Stromkreis ist geschlossen.":"Schalter geöffnet – der Stromkreis ist unterbrochen.");break;
+    case"u":setU(r.U+(+a1)*r.cfg.u[2]);break;
+    case"u0":setU(0);break;
+    case"riders":r.riders=newRiders();r.fellMsg=false;setMsg("Neue Papierreiter aufgesetzt.");break;
+    case"n":r.N=+a1;refreshControls();setMsg(`Spule mit ${a1} Windungen eingesetzt.`);break;
+    case"core":r.core=!r.core;refreshControls();setMsg(r.core?"Eisenkern eingesetzt.":"Eisenkern herausgenommen.");break;
+    case"pol":r.pol=-r.pol;refreshControls();setMsg(r.pol<0?"Umgepolt: Der Strom fließt jetzt in der anderen Richtung durch die Spule.":"Wieder normal gepolt.");break;
+    case"run":r.run=!r.run;refreshControls();setMsg(r.run?"Schalter geschlossen – die Stoppuhr läuft.":"Schalter geöffnet – die Stoppuhr hält an. Jetzt ablesen!");break;
+    case"clk0":r.run=false;r.time=0;r.Q=0;r.VH=0;r.VO=0;r.bub=[];r.changed=false;refreshControls();setMsg("Gas abgelassen, Stoppuhr auf 0.");break;
+    case"reset":{const m=r.myst;cache[r.cfg.id]=makeRuntime(r.cfg);cur=cache[r.cfg.id];cur.myst=null;M=null;buildPanel();setMsg("Versuch zurückgesetzt.");break;}
+    case"record":record();break;
+    case"delrow":{const rows=rowsOf(r.cfg.id);rows.splice(+a1,1);LS.set("rows."+r.cfg.id,rows);renderTable();break;}
+    case"clearrows":if(confirm("Alle Messwerte dieser Tabelle löschen?")){LS.set("rows."+r.cfg.id,[]);renderTable();}break;
+    case"axis":LS.set("axis."+r.cfg.id,+a1);renderTable();break;
+    case"ans":answer(+a1,+a2);break;
+    case"jd":checkJD(+a1);break;
+    case"model":setModel(!modelOn);break;
+    case"myst":{const[lo,hi]=r.cfg.myst;r.myst={U:Math.round((lo+Math.random()*(hi-lo))*20)/20,guess:""};
+      if(r.sc==="chem"){r.run=false;r.time=0;r.Q=0;r.VH=0;r.VO=0;r.bub=[];}
+      if(r.sc==="heat")r.riders=newRiders();
+      refreshControls();renderMyst();setMsg("Rätselstrom eingeschaltet. Lies die Wirkung ab!");break;}
+    case"mystcheck":mystCheck(false);break;
+    case"mystshow":mystCheck(true);break;
+    case"mystend":r.myst=null;if(r.sc==="chem"){r.run=false;r.time=0;r.Q=0;r.VH=0;r.VO=0;r.bub=[];}refreshControls();renderMyst();setMsg("Rätsel beendet.");break;
+    case"wipe":if(confirm("Wirklich alle Tabellen, Antworten und Notizen löschen?")){LS.clear();buildPanel();}break;
+  }
+});
+function setModel(on){modelOn=on;document.body.classList.toggle("model",on);const t=$("#modelToggle");t.classList.toggle("on",on);t.setAttribute("aria-pressed",on);t.textContent=on?"🔬 Modell: an":"🔬 Modell";
+  const mb=$("#mBtn");if(mb){mb.classList.toggle("on",on);mb.textContent=on?"Modell ausblenden":"Modell anzeigen";}
+  requestAnimationFrame(()=>{setHH();resize();});}
+$("#modelToggle").addEventListener("click",()=>setModel(!modelOn));
+
+/* ================= Stationen wechseln ================= */
+function buildTabs(){$("#tabs").innerHTML=STATIONS.map((s,i)=>`<button data-i="${i}" class="${i===curIdx?"on":""}">${s.tab}</button>`).join("");}
+$("#tabs").addEventListener("click",ev=>{const b=ev.target.closest("button");if(b)go(+b.dataset.i);});
+function go(i){
+  curIdx=i;const cfg=STATIONS[i];if(!cache[cfg.id])cache[cfg.id]=makeRuntime(cfg);
+  cur=cache[cfg.id];M=null;buildTabs();buildPanel();panel.scrollTop=0;LS.set("station",i);
+  const on=$("#tabs .on");if(on&&on.scrollIntoView)on.scrollIntoView({inline:"center",block:"nearest"});
+}
+function setHH(){document.documentElement.style.setProperty("--hh",$("#hdr").offsetHeight+"px");}
+window.addEventListener("resize",()=>{setHH();resize();});
+document.addEventListener("gesturestart",e=>e.preventDefault());
+
+let last=performance.now(),ovT=0,ovHTML="";
+function loop(now){
+  const dt=Math.min(.04,(now-last)/1000);last=now;
+  if(cur){step(dt);if(modelOn)modelStep(dt);render();
+    ovT-=dt;if(ovT<=0){ovT=0.12;const ro=readout(cur),h=ro?`<div class="box"><b class="h">Messwerte</b>${ro}</div>`:"";if(h!==ovHTML){ovHTML=h;ov.innerHTML=h;}}}
+  requestAnimationFrame(loop);
+}
+setHH();
+go(clamp(LS.get("station",0)|0,0,STATIONS.length-1));
+resize();
+if(window.ResizeObserver)new ResizeObserver(()=>resize()).observe(stage);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
