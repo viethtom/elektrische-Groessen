@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>Elektroskop-Labor 3D</title>
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f172a;--muted:#475569;--line:#d8dee8;--brand:#0f2a4a;--accent:#2563eb;--pos:#dc2626;--neg:#2563eb;--ok:#059669;--warn:#d97706;--el:#7c3aed;--hh:60px;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.45}
+header{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;display:flex;align-items:center;gap:10px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+header h1{font-size:17px;margin:0;white-space:nowrap;font-weight:700}
+nav{display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;border:0;border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600;background:rgba(255,255,255,.12);color:#fff;min-height:40px}
+nav button.on{background:#fff;color:var(--brand)}
+.switch{flex:0 0 auto;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600;min-height:40px}
+.switch.on{background:#fde68a;color:#111;border-color:#fde68a}
+main{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:12px;padding:12px;height:calc(100vh - var(--hh));height:calc(100dvh - var(--hh))}
+#stage{position:relative;background:#f4f7fb;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);min-height:300px}
+#stage canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#ov{position:absolute;top:10px;right:10px;max-width:min(330px,46%);pointer-events:none}
+#ov .box{background:rgba(255,255,255,.93);border-radius:12px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.15);font-size:14px}
+#ov .bar{height:14px;border-radius:7px;margin:2px 0 8px}
+#viewbar{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center}
+#viewbar button{border:0;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;background:rgba(255,255,255,.92);box-shadow:0 1px 3px rgba(0,0,0,.15);min-height:38px;color:var(--ink)}
+#viewbar span{font-size:12px;color:var(--muted);background:rgba(255,255,255,.8);padding:4px 8px;border-radius:8px}
+#panel{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px}
+#nogl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;font-weight:600}
+@media (orientation:portrait),(max-width:900px){
+  header h1 .t{display:none}
+  main{display:block;height:auto;padding:10px}
+  #stage{position:sticky;top:var(--hh);z-index:5;margin-bottom:10px;height:50vh}
+  #panel{overflow:visible}
+  #viewbar span{display:none}
+}
+h2{font-size:21px;margin:4px 0 6px}
+h3{font-size:16px;margin:0 0 8px;color:var(--brand)}
+.lead{margin:0 0 10px;color:var(--muted)}
+.card{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card.real{border-left:5px solid var(--warn)}
+ol.steps{margin:0;padding-left:22px}
+ol.steps li{margin-bottom:6px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.btn{border:0;border-radius:10px;padding:10px 13px;font-size:15px;font-weight:600;background:#e2e8f0;color:var(--ink);min-height:44px}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.on{background:#fde68a;box-shadow:inset 0 0 0 2px var(--warn)}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.btn:active{transform:scale(.97)}
+.seg{display:inline-flex;flex-wrap:wrap;background:#e2e8f0;border-radius:10px;padding:3px;gap:3px}
+.seg .btn{background:transparent;min-height:38px;padding:8px 12px}
+.seg .btn.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lbl-s{font-size:13px;color:var(--muted);margin:6px 0 4px;font-weight:600}
+.msg{min-height:24px;font-size:15px;color:var(--brand);font-weight:600;padding:6px 10px;border-radius:8px;background:#eff6ff;margin-top:4px}
+input[type=range]{width:100%;height:36px;accent-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:6px}
+th,td{border:1px solid var(--line);padding:6px;text-align:center}
+th{background:#f1f5f9;font-weight:600}
+td input{width:100%;border:0;font-size:14.5px;padding:4px;background:#fffbeb;border-radius:4px}
+td .x{border:0;background:none;color:#b91c1c;font-size:18px;padding:2px 6px}
+.chart{width:100%;height:auto;margin-top:8px}
+.q{margin-bottom:12px}
+.q p{margin:0 0 6px;font-weight:600}
+.q .opt{display:block;width:100%;text-align:left;margin-bottom:6px;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:15px;color:var(--ink);min-height:44px}
+.q .opt.right{border-color:var(--ok);background:#ecfdf5}
+.q .opt.wrong{border-color:#f87171;background:#fef2f2}
+.fb{font-size:14.5px;margin-top:4px}
+.fb.ok{color:#065f46}.fb.no{color:#991b1b}
+.jd{font-size:16px;line-height:2.4}
+.jd select{font-size:16px;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:#fff;color:var(--ink);max-width:100%}
+details{background:#f8fafc;border-radius:10px;padding:8px 12px;margin-top:6px}
+summary{font-weight:700;color:var(--brand);padding:4px 0;cursor:pointer}
+.merk{background:#fef9c3;border-radius:10px;padding:10px 12px;margin-top:8px;border-left:5px solid #eab308}
+textarea{width:100%;min-height:90px;font-size:15px;border:2px solid var(--line);border-radius:10px;padding:8px;font-family:inherit}
+.small{font-size:13.5px;color:var(--muted)}
+.legend{display:inline-flex;gap:12px;font-size:14px;align-items:center;flex-wrap:wrap}
+.dot{display:inline-block;width:16px;height:16px;border-radius:50%;color:#fff;text-align:center;line-height:16px;font-weight:700;font-size:13px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header id="hdr">
+  <h1>⚡<span class="t"> Elektroskop-Labor</span></h1>
+  <nav id="tabs"></nav>
+  <button class="switch" id="chgToggle">Ladungen: aus</button>
+</header>
+<main>
+  <section id="stage">
+    <div id="ov"></div>
+    <div id="viewbar"><button id="viewReset">⟲ Ansicht</button><span>Hintergrund ziehen: drehen · zwei Finger: zoomen</span></div>
+    <div id="nogl">3D-Darstellung wird von diesem Browser nicht unterstützt (WebGL fehlt).</div>
+  </section>
+  <aside id="panel"></aside>
+</main>
+<script>/*@@THREE@@*/</script>
+<script>
+"use strict";
+/* ============ Modellkonstanten (Modellkoordinaten in "px": x nach rechts, y nach unten; 100 px = 1 3D-Einheit) ============ */
+const PY=250, HC=420, HR=120, PL=100, PX=20;
+const KL=0.0204;        // Gleichgewicht: tan(alpha) = KL * q^2  (q = Ladung auf Metallstab+Zeiger)
+const FG=20;            // Gewichtskraft des Zeigers in mN (m = 2 g)
+const TH_MAX=85*Math.PI/180, PORTION=2.5, RUB=4, RODMAX=32, D0=4.5;
+const W=x=>(x-500)/100, H=y=>(606-y)/100;
+const RODS={
+  pvc:{name:"Kunststoffstab",cloth:"Wolltuch",sign:-1,color:0x374151,glass:false},
+  glas:{name:"Glasstab",cloth:"Seidentuch",sign:+1,color:0xbfe9fb,glass:true}
+};
+const fmt=(x,d=1)=>(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace(".",",");
+const deg=th=>th*180/Math.PI, skt=th=>deg(th)/9;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const $=s=>document.querySelector(s);
+const LS={
+  get(k,d){try{const v=localStorage.getItem("eskop."+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem("eskop."+k,JSON.stringify(v));}catch(e){}},
+  clear(){try{Object.keys(localStorage).filter(k=>k.indexOf("eskop.")===0).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+};
+
+/* ============ Stationen ============ */
+const JD_ADJ=["größer","kleiner"];
+const STATIONS=[
+{
+  id:"aufbau",tab:"Start",title:"Das Elektroskop – Aufbau",
+  lead:"Ein Elektroskop zeigt an, ob ein Körper elektrisch geladen ist. In diesem 3D-Labor wiederholst du die Versuche aus dem Unterricht Schritt für Schritt.",
+  scene:{es:[600],labels:true,view:{x0:250,x1:960,y0:120,y1:640}},
+  html:`<div class="card"><h3>So bedienst du das Labor</h3><ol class="steps">
+   <li>Oben wählst du den Versuch: <b>V1 bis V8</b>, am Ende die <b>Merksätze</b>.</li>
+   <li>Den <b>Stab ziehst du mit dem Finger</b>. Zum Reiben bewegst du ihn auf dem Tuch kräftig hin und her (oder tippe auf „Stab reiben“).</li>
+   <li>Ziehst du auf dem <b>Hintergrund</b>, drehst du die 3D-Ansicht. Mit zwei Fingern zoomst du. „⟲ Ansicht“ stellt sie zurück.</li>
+   <li>Der Knopf oben rechts schaltet die <b>Ladungsanzeige</b> um:
+     <span class="legend"><span><span class="dot" style="background:var(--pos)">+</span> positiv</span><span><span class="dot" style="background:var(--neg)">−</span> negativ</span></span><br>
+     <b>aus</b> → <b>Überschuss</b> (nur die Ladung, die zu viel ist) → <b>alle</b> (alle positiven und negativen Ladungen).</li>
+   <li>Den Ausschlag liest du an der <b>Skala</b> ab (0 bis 10 Skalenteile, kurz Skt). Der Wert steht auch vorn am Fuß.</li>
+   <li><b>„Messwert aufnehmen“</b> trägt den Wert in die Tabelle ein. Tabellen, Antworten und Notizen bleiben auf diesem iPad gespeichert.</li>
+  </ol></div>
+  <div class="card"><h3>Die Teile des Elektroskops</h3>
+  <p style="margin:0">Teller, Metallstab und Zeiger sind aus Metall und leiten. Der Zeiger ist an einer <b>Drehachse</b> gelagert, sein Schwerpunkt liegt etwas unterhalb der Achse. Der <b>Isolator</b> trennt die leitenden Teile vom Gehäuse, damit die Ladung nicht abfließt.</p></div>`,
+  qs:[
+   {q:"Das Elektroskop ist ungeladen. Wie hängt der Zeiger?",o:["Senkrecht – die Gewichtskraft zieht seinen Schwerpunkt so tief wie möglich.","Schräg, weil er vom Metallstab abgestoßen wird.","Waagerecht."],c:0,
+    ex:"Ohne Ladung hat nur die Gewichtskraft eine Drehwirkung. Sie dreht den Zeiger, bis der Schwerpunkt genau unter der Drehachse liegt."},
+   {q:"Wozu dient der Isolator zwischen Metallstab und Gehäuse?",o:["Damit die Ladung nicht über das Gehäuse abfließen kann.","Damit der Zeiger leichter wird.","Damit man die Skala besser sieht."],c:0,
+    ex:"Ein Isolator (Nichtleiter) leitet keine Ladung. So bleibt die Ladung auf Teller, Metallstab und Zeiger."}
+  ],
+  merk:"Ein Elektroskop besteht aus Teller, Metallstab und drehbar gelagertem Zeiger (alle leitend). Ein Isolator trennt sie vom Gehäuse. Der Ausschlag des Zeigers zeigt an, ob das Elektroskop geladen ist."
+},
+{
+  id:"v1",tab:"V1 Ladung",title:"V1: Gibt es elektrische Ladung?",
+  lead:"Durch Reiben bekommt ein Stab eine Eigenschaft, die man nicht sehen kann. Das Elektroskop macht sie sichtbar.",
+  real:"Im Unterricht: Ein Kunststoffstab wurde mit einem Wolltuch gerieben und an den Teller des Elektroskops gehalten.",
+  scene:{es:[620],rods:["pvc"],cloth:true,ground:true},
+  steps:[
+   "Ziehe den <b>ungeriebenen</b> Kunststoffstab auf den Teller (berühren) und wieder weg. Beobachte den Zeiger.",
+   "Reibe den Stab auf dem Wolltuch: ziehe ihn mehrmals kräftig hin und her.",
+   "Berühre mit dem geriebenen Stab den Teller und ziehe ihn wieder weg. Beobachte den Zeiger.",
+   "Reibe den Stab noch einmal und berühre den Teller erneut. Was ändert sich?",
+   "Tippe auf „Finger an den Teller“. Was passiert mit dem Zeiger?",
+   "Wiederhole alles mit der Ladungsanzeige „Überschuss“."],
+  qs:[
+   {q:"Der ungeriebene Stab bewirkt nichts. Nach dem Reiben und Berühren bleibt der Zeiger ausgelenkt. Was folgt daraus?",
+    o:["Der Stab ist durch das Reiben elektrisch geladen worden. Ein Teil dieser Ladung ist auf das Elektroskop übergegangen.","Der Stab ist beim Reiben warm geworden und erwärmt den Zeiger.","Der Zeiger ist beim Berühren schwerer geworden."],c:0,
+    ex:"Es gibt <b>elektrische Ladung</b>. Sie geht beim Berühren teilweise auf das Elektroskop über und bleibt dort."},
+   {q:"Nach dem zweiten Reiben und Berühren ist der Ausschlag…",o:["größer als vorher.","genauso groß.","wieder null."],c:0,
+    ex:"Es ist mehr Ladung auf dem Elektroskop. Wie der Ausschlag von der Ladungsmenge abhängt, untersuchst du in V7."},
+   {q:"Was bewirkt der Finger am Teller?",o:["Über den Körper findet ein Ladungsausgleich mit der Erde statt – das Elektroskop wird entladen.","Der Finger lädt das Elektroskop zusätzlich auf.","Der Finger hält den Zeiger fest."],c:0,
+    ex:"Der menschliche Körper leitet. Über ihn gleicht sich die Ladung mit der (riesigen) Erde aus. Das nennt man <b>Erden</b>."}
+  ],
+  info:"Beim Reiben gehen Elektronen (winzige, negativ geladene Teilchen) vom Wolltuch auf den Kunststoffstab über. Dabei <b>entsteht keine Ladung neu</b> – sie wird nur <b>getrennt</b>: Der Stab hat danach Elektronenüberschuss (negativ), das Tuch genauso viel Elektronenmangel (positiv). Beim Berühren geht ein Teil der Ladung auf das Elektroskop über und verteilt sich auf Teller, Metallstab und Zeiger. Metallstab und Zeiger sind dann gleichnamig geladen und <b>stoßen sich ab</b> – der Zeiger schlägt aus. Beim Erden fließen die überschüssigen Elektronen über den Körper zur Erde ab.",
+  merk:"Beim Reiben werden Ladungen getrennt: Körper werden elektrisch geladen. Geladene Körper üben Kräfte aufeinander aus. Das Elektroskop zeigt Ladung an. Durch Erden wird ein Körper entladen."
+},
+{
+  id:"v2",tab:"V2 Influenz",title:"V2: Laden durch Influenz",
+  lead:"Was passiert, wenn der geladene Stab dem Teller nur <b>nahe kommt</b>, ihn aber nicht berührt?",
+  real:"Im Unterricht: Der geriebene Stab wurde dem Teller langsam genähert und wieder entfernt – ohne Berührung. Danach wurde das Elektroskop durch Influenz mit Erdung aufgeladen.",
+  scene:{es:[620],rods:["pvc","glas"],cloth:true,ground:true,dist:true},
+  steps:[
+   "Reibe den Kunststoffstab am Wolltuch (etwa 5×).",
+   "Nähere den Stab langsam dem Teller, <b>ohne ihn zu berühren</b>. Beobachte den Zeiger und die Abstandsanzeige d.",
+   "Ziehe den Stab wieder weg. Was macht der Zeiger?",
+   "Stelle die Ladungsanzeige auf „alle“ und wiederhole Schritt 2 und 3. Welche Ladungen bewegen sich – und welche nicht?",
+   "<b>Aufladen durch Influenz:</b> Stab nah an den Teller halten (nicht berühren) → „Finger an den Teller“ antippen → Finger wieder wegnehmen → <i>erst dann</i> den Stab entfernen.",
+   "Prüfe: Nähere den geriebenen Kunststoffstab erneut. Wird der Ausschlag größer oder kleiner?",
+   "Zusatz: Wiederhole mit dem Glasstab (am Seidentuch reiben)."],
+  qs:[
+   {q:"Der geladene Stab ist nah am Teller, berührt ihn aber nicht. Der Zeiger schlägt aus. Warum?",
+    o:["Ladung springt durch die Luft vom Stab auf das Elektroskop über.","Die frei beweglichen Elektronen im Metall werden verschoben. Oben und unten entstehen entgegengesetzte Ladungen; Metallstab und Zeiger sind gleichnamig geladen und stoßen sich ab.","Der Stab zieht den Zeiger mit seiner Gewichtskraft an."],c:1,
+    ex:"Diese Ladungstrennung durch einen geladenen Körper in der Nähe heißt <b>Influenz</b>. Es wird keine Ladung vom Stab übertragen – insgesamt bleibt das Elektroskop neutral. Deshalb geht der Ausschlag zurück, wenn der Stab entfernt wird."},
+   {q:"Wie hängt der Ausschlag vom Abstand des Stabs ab?",o:["Je näher der Stab, desto größer der Ausschlag.","Der Ausschlag bleibt immer gleich.","Je näher der Stab, desto kleiner der Ausschlag."],c:0,
+    ex:"Das misst du genau in V8."},
+   {q:"Du hast das Elektroskop mit dem negativen Kunststoffstab durch Influenz (mit Erdung) aufgeladen. Wie ist es danach geladen?",o:["negativ, wie der Stab","positiv, also entgegengesetzt zum Stab","gar nicht"],c:1,
+    ex:"Beim Erden fließen die vom Stab abgestoßenen Elektronen über den Finger zur Erde ab. Nimmt man erst den Finger und dann den Stab weg, bleibt Elektronenmangel: Das Elektroskop ist <b>positiv</b>. Prüfung: Nähert man den negativen Stab, wird der Ausschlag <i>kleiner</i>."}
+  ],
+  info:"In Metallen gibt es <b>frei bewegliche Elektronen</b>; die positiven Ladungen (Atomrümpfe) sitzen fest. Ein negativer Stab stößt die Elektronen ab: Sie wandern nach unten in Metallstab und Zeiger (dort Elektronenüberschuss), oben im Teller bleibt Elektronenmangel. Ein positiver Stab zieht die Elektronen dagegen nach oben in den Teller. Diese <b>Ladungstrennung</b> durch einen geladenen Körper in der Nähe heißt <b>Influenz</b>. Dabei geht keine Ladung vom Stab auf das Elektroskop über. Erdet man währenddessen, fließen Elektronen zur Erde ab (negativer Stab) bzw. von der Erde zu (positiver Stab). Nimmt man danach zuerst den Finger und dann den Stab weg, ist das Elektroskop <b>entgegengesetzt</b> zum Stab geladen.",
+  merk:"Influenz: Ein geladener Körper trennt in einem Leiter die Ladungen, ohne ihn zu berühren – es wird dabei keine Ladung übertragen. Erdet man währenddessen, fließen Elektronen zur Erde ab oder von ihr zu: So lädt man ein Elektroskop durch Influenz, und zwar entgegengesetzt zum Stab."
+},
+{
+  id:"v3",tab:"V3 Kontakt",title:"V3: Ladungsübertragung durch Kontakt",
+  lead:"Ladung kann durch Berühren übertragen werden – vom Stab auf ein Elektroskop und von einem Elektroskop auf ein anderes.",
+  real:"Im Unterricht: Zwei Elektroskope. Eines wurde mit dem geriebenen Stab durch Berühren geladen, dann wurden beide mit einem Bügel verbunden.",
+  scene:{es:[470,790],rods:["pvc","glas"],cloth:true,ground:true,bridge:true},
+  steps:[
+   "Reibe den Stab und berühre damit den Teller von E1. Entferne den Stab: Der Ausschlag bleibt!",
+   "Vergleiche mit V2: Was ist der Unterschied zwischen Influenz und Berührung?",
+   "Nimm einen Messwert auf und schreibe unter „Situation“, was du gemacht hast.",
+   "Verbinde E1 und E2 mit dem <b>Kunststoffbügel</b>. Beobachte. Nimm den Bügel wieder ab.",
+   "Verbinde E1 und E2 mit dem <b>Metallbügel</b>. Beobachte beide Zeiger und nimm einen Messwert auf.",
+   "Nimm den Bügel ab. Bleiben die Ausschläge?"],
+  table:{cols:[{k:"sit",l:"Situation",edit:true},{k:"e1",l:"E1 in Skt",d:1},{k:"e2",l:"E2 in Skt",d:1}],rec:r=>({sit:"",e1:skt(r.es[0].th),e2:skt(r.es[1].th)})},
+  qs:[
+   {q:"Nach dem Berühren und Entfernen des Stabs bleibt der Ausschlag. Warum?",o:["Ladung ist vom Stab auf das Elektroskop übergegangen und bleibt dort.","Der Zeiger klemmt.","Der Stab wirkt aus der Entfernung weiter."],c:0,
+    ex:"Anders als bei der Influenz ist hier wirklich Ladung übertragen worden."},
+   {q:"Mit dem Metallbügel zeigen danach beide Elektroskope den gleichen, kleineren Ausschlag. Was bedeutet das?",o:["Die Ladung hat sich auf beide Elektroskope verteilt.","Ein Teil der Ladung wurde vernichtet.","Es ist neue Ladung entstanden."],c:0,
+    ex:"Über den Leiter fließen Elektronen, bis beide gleich geladen sind. Die Gesamtladung bleibt erhalten – sie ist nur verteilt."},
+   {q:"Mit dem Kunststoffbügel passiert nichts. Warum?",o:["Kunststoff ist ein Isolator (Nichtleiter).","Der Bügel ist zu kurz.","Kunststoff ist ein guter Leiter."],c:0,
+    ex:"Metalle sind Leiter, Kunststoff und Glas sind Isolatoren."}
+  ],
+  info:"Berührt der geladene Stab den Teller, gehen Elektronen über (vom negativen Stab aufs Elektroskop bzw. vom Elektroskop auf den positiven Stab). Die Ladung verteilt sich auf alle leitenden Teile. Verbindet man zwei Elektroskope mit einem <b>Leiter</b> (Metall), verteilt sie sich auf beide, die Gesamtladung bleibt gleich. Ein <b>Isolator</b> (Kunststoff) leitet keine Ladung. Weil Kunststoff- und Glasstäbe selbst Isolatoren sind, gibt der Stab nur Ladung von der Berührungsstelle ab – deshalb kann man mehrmals nacheinander Ladung übertragen.",
+  merk:"Kontakt: Berührt ein geladener Körper einen Leiter, geht Ladung über und bleibt dort. Über Leiter verteilt sich Ladung, Isolatoren leiten sie nicht. Die Gesamtladung bleibt erhalten."
+},
+{
+  id:"v4",tab:"V4 Kräfte",title:"V4: Kräftegleichgewicht am Zeiger",
+  lead:"Warum bleibt der Zeiger schräg stehen? Die Pfeile zeigen die Kräfte am Zeiger, die Balken oben rechts ihre Drehwirkung.",
+  real:"Im Unterricht: Wir haben verglichen, wie der Zeiger ungeladen (nur Gewichtskraft) und geladen (Gewichtskraft und elektrische Kraft) im Gleichgewicht ist.",
+  scene:{es:[420],forces:true,charge:true,view:{x0:150,x1:900,y0:170,y1:640}},
+  steps:[
+   "Betrachte den ungeladenen Zeiger. Welche Kraft wirkt, und hat sie eine Drehwirkung?",
+   "Tippe auf „Ladungsportion hinzufügen“. Beobachte, wie der Zeiger ausschlägt, hin und her schwingt und zur Ruhe kommt.",
+   "Vergleiche die beiden Balken „Drehwirkung“. Was gilt, wenn der Zeiger ruht?",
+   "Gedankenexperiment: Tippe auf „Elektrische Kraft wegdenken“. Was würde passieren?",
+   "Nimm für 0 bis 6 Portionen jeweils einen Messwert auf – erst, wenn der Zeiger ruht!"],
+  table:{cols:[{k:"n",l:"Portionen",d:0},{k:"a",l:"Winkel α in °",d:0},{k:"s",l:"Ausschlag in Skt",d:1},{k:"f",l:"F<sub>el</sub> in mN",d:1}],
+    rec:r=>{const e=r.es[0];return{n:r.n,a:deg(e.th),s:skt(e.th),f:FG*Math.tan(e.th)};},x:"s",y:"f",xl:"Ausschlag in Skt",yl:"F_el in mN",needRest:true},
+  jd:[{qty:["der Ausschlag","die Gewichtskraft","die Masse des Zeigers"],res:["die elektrische Kraft","die Gewichtskraft"],
+       ok:[{q:"der Ausschlag",r:["die elektrische Kraft"],rel:1}],hint:"Weil die Gewichtskraft immer gleich bleibt, ist der Ausschlag ein Maß für die elektrische Kraft."}],
+  qs:[
+   {q:"Der ungeladene Zeiger hängt senkrecht und ruht. Was gilt?",o:["Die Gewichtskraft wirkt, hat aber keine Drehwirkung, weil der Schwerpunkt S genau unter der Achse liegt. Die Achse trägt den Zeiger.","Auf den Zeiger wirkt gar keine Kraft.","Die elektrische Kraft hält ihn senkrecht."],c:0,
+    ex:"Die Achse hält den Zeiger fest (Haltekraft der Achse). Für das Drehen kommt es nur auf die Drehwirkungen an."},
+   {q:"Der geladene Zeiger ruht schräg. Was folgt daraus?",o:["Es muss eine zweite Kraft wirken, deren Drehwirkung die der Gewichtskraft ausgleicht: die elektrische Kraft.","Die Gewichtskraft ist verschwunden.","Der Zeiger klemmt an der Achse."],c:0,
+    ex:"In Schräglage würde die Gewichtskraft allein den Zeiger zurück nach unten drehen. Weil er ruht, muss eine gleich große Gegen-Drehwirkung da sein: die der <b>elektrischen Kraft</b>."},
+   {q:"Im Gedankenexperiment ohne elektrische Kraft…",o:["schwingt der Zeiger zurück in die senkrechte Lage.","bleibt der Zeiger schräg stehen.","dreht sich der Zeiger immer weiter."],c:0},
+   {q:"Woher kommt die elektrische Kraft auf den Zeiger?",o:["Metallstab und Zeiger sind gleichnamig geladen und stoßen sich ab.","Der Zeiger wird magnetisch.","Die Luft drückt den Zeiger weg."],c:0}
+  ],
+  info:"Der Zeiger ist drehbar gelagert, sein Schwerpunkt S liegt unter der Drehachse. Die <b>Gewichtskraft F<sub>G</sub></b> (die Anziehung durch die Erde) greift in S an. Ist der Zeiger ausgelenkt, dreht sie ihn zurück nach unten. Ist das Elektroskop geladen, stoßen sich Metallstab und Zeiger ab: Die <b>elektrische Kraft F<sub>el</sub></b> dreht den Zeiger nach außen. Er kommt dort zur Ruhe, wo sich beide <b>Drehwirkungen</b> ausgleichen – im <b>Gleichgewicht</b>. (Die Achse trägt den Zeiger zusätzlich; ihre Kraft hat keine Drehwirkung.) Weil F<sub>G</sub> immer gleich groß bleibt, kann man am Ausschlag ablesen, wie groß die elektrische Kraft ist.<br><br><i>Modell dieser Simulation:</i> F<sub>el</sub> greift waagerecht, F<sub>G</sub> senkrecht im gleichen Abstand von der Achse an; dann gilt im Gleichgewicht F<sub>el</sub> = F<sub>G</sub> · tan α mit F<sub>G</sub> = 20 mN (Zeigermasse 2 g). Bei einem echten Elektroskop sind die Hebel anders, der Zusammenhang „größerer Ausschlag ↔ größere Kraft“ gilt aber genauso.",
+  merk:"Ruht der Zeiger schräg, herrscht Gleichgewicht: Die Drehwirkung der elektrischen Kraft gleicht die der Gewichtskraft aus. Also muss es eine elektrische Kraft geben. Je größer der Ausschlag, desto größer die elektrische Kraft."
+},
+{
+  id:"v5",tab:"V5 + und −",title:"V5: Positive und negative Ladung",
+  lead:"Gibt es nur eine Sorte Ladung? Mit zwei Elektroskopen und zwei verschiedenen Stäben findest du es heraus.",
+  real:"Im Unterricht: Ein Elektroskop wurde mit dem Kunststoffstab (Wolltuch), das andere mit dem Glasstab (Seidentuch) geladen und beide wurden verbunden.",
+  scene:{es:[470,790],rods:["pvc","glas"],cloth:true,ground:true,bridge:true,lamp:true},
+  steps:[
+   "Lade E1 mit dem <b>Kunststoffstab</b> (am Wolltuch reiben, Teller berühren, wegziehen).",
+   "Wechsle zum <b>Glasstab</b>, reibe ihn am Seidentuch und lade E2. Versuche, ungefähr den gleichen Ausschlag wie bei E1 zu erreichen.",
+   "Verbinde beide mit dem <b>Metallbügel</b>. Beobachte!",
+   "Wiederhole: Lade diesmal <b>beide</b> mit dem Kunststoffstab und verbinde sie.",
+   "Lade E1 mit dem Kunststoffstab. Nähere dann (ohne Berührung) erst den geriebenen Kunststoffstab, dann den geriebenen Glasstab. Wie ändert sich der Ausschlag?",
+   "Prüfe mit der <b>Glimmlampe</b>: Sie leuchtet an der Elektrode, die mit dem negativen Körper verbunden ist. Leuchtet sie auf der Tellerseite, ist das Elektroskop negativ, leuchtet sie auf der Handseite, ist es positiv."],
+  qs:[
+   {q:"E1 (Kunststoff) und E2 (Glas) werden verbunden. Die Ausschläge gehen (fast) ganz zurück. Was schließt du daraus?",o:["Es gibt zwei verschiedene Ladungsarten, die sich in ihrer Wirkung gegenseitig aufheben.","Die Ladung ist über den Bügel zur Erde abgeflossen.","Glas kann keine Ladung tragen."],c:0,
+    ex:"Man nennt sie <b>positive (+)</b> und <b>negative (−)</b> Ladung. Die überschüssigen Elektronen von E1 fließen über den Bügel zu E2 und gleichen dort den Elektronenmangel aus."},
+   {q:"Beide mit Kunststoff geladen und verbunden: Was passiert?",o:["Beide behalten einen Ausschlag – die Ladung verteilt sich nur.","Beide Ausschläge gehen auf null.","Beide Ausschläge werden doppelt so groß."],c:0},
+   {q:"E1 ist negativ geladen. Ein positiv geladener Glasstab wird langsam genähert. Der Ausschlag…",o:["wird kleiner.","wird größer.","bleibt gleich."],c:0,
+    ex:"Der positive Stab zieht Elektronen nach oben in den Teller. Unten an Metallstab und Zeiger bleibt weniger Überschussladung – der Ausschlag sinkt. (Kommt der Stab sehr nah, kann er sogar wieder steigen, weil dann unten Elektronenmangel entsteht.) Ein gleichnamig geladener Stab vergrößert den Ausschlag."},
+   {q:"Welche Regel gilt für Kräfte zwischen Ladungen?",o:["Gleichnamige Ladungen stoßen sich ab, ungleichnamige ziehen sich an.","Alle Ladungen ziehen sich an.","Gleichnamige Ladungen ziehen sich an, ungleichnamige stoßen sich ab."],c:0}
+  ],
+  info:"Es gibt <b>zwei Ladungsarten</b>. Ein mit Wolle geriebener Kunststoffstab ist <b>negativ</b> geladen (Elektronenüberschuss), ein mit Seide geriebener Glasstab <b>positiv</b> (Elektronenmangel). Bringt man gleich viel positive und negative Ladung zusammen, heben sie sich in ihrer Wirkung auf – der Körper ist danach elektrisch neutral (siehe V6). Mit der Glimmlampe bestimmt man die Ladungsart: Sie leuchtet an der Elektrode, die mit dem negativ geladenen Körper verbunden ist.",
+  merk:"Es gibt positive und negative Ladung. Gleichnamige Ladungen stoßen sich ab, ungleichnamige ziehen sich an. Gleich viel positive und negative Ladung heben sich in ihrer Wirkung auf."
+},
+{
+  id:"neutral",tab:"V6 Neutral",title:"V6: Der neutrale Ladungszustand",
+  lead:"Ein ungeladener Körper hat <b>nicht keine Ladung</b>. Was bedeutet „neutral“ wirklich?",
+  real:"Im Unterricht: Stab und Tuch wurden nach dem Reiben zusammen an das Elektroskop gehalten und dann getrennt. Außerdem wurden positive und negative Ladung auf ein Elektroskop gebracht.",
+  scene:{es:[680],rods:["pvc"],cloth:true,ground:true,wrap:true,pm:true,neutral:true,dist:true},
+  steps:[
+   "Stelle die Ladungsanzeige auf <b>„alle“</b>. Betrachte Stab, Tuch und Elektroskop vor dem Reiben. Was fällt dir auf?",
+   "Berühre mit dem ungeriebenen Stab den Teller: kein Ausschlag.",
+   "Tippe auf <b>„Tuch um den Stab wickeln“</b> und dann mehrmals auf „Stab reiben“ (der Stab wird im Tuch gerieben).",
+   "Halte Stab <i>und</i> Tuch zusammen dicht an den Teller (nicht berühren). Gibt es einen Ausschlag?",
+   "Tippe auf <b>„Tuch abnehmen“</b> und halte nur den Stab an den Teller. Was beobachtest du jetzt? Vergleiche die Anzeige oben rechts.",
+   "Entlade das Elektroskop. Gib eine <b>positive</b> Ladungsportion auf das Elektroskop, danach eine <b>negative</b>. Was passiert mit dem Ausschlag?"],
+  qs:[
+   {q:"Vor dem Reiben zeigt die Anzeige „alle“ im Stab, im Tuch und im Elektroskop jeweils…",o:["gleich viele positive und negative Ladungen.","überhaupt keine Ladungen.","nur positive Ladungen."],c:0,
+    ex:"Jeder Körper enthält sehr viele positive und negative Ladungen. Sind es <b>gleich viele</b>, heben sich ihre Wirkungen auf: Der Körper ist <b>elektrisch neutral</b>."},
+   {q:"Stab und Tuch zusammen bewirken nach dem Reiben keinen Ausschlag, getrennt aber schon. Warum?",o:["Beim Reiben ist keine Ladung entstanden: Der Stab hat genau so viele Elektronen bekommen, wie dem Tuch fehlen. Zusammen sind sie neutral.","Das Tuch schirmt die Ladung des Stabs vollständig ab, weil es aus Wolle ist.","Die Ladung entsteht erst, wenn man das Tuch abnimmt."],c:0,
+    ex:"Reiben <b>trennt</b> Ladungen nur. Die Gesamtladung von Stab und Tuch bleibt null (<b>Ladungserhaltung</b>)."},
+   {q:"Eine positive und eine gleich große negative Portion auf dem Elektroskop ergeben…",o:["keinen Ausschlag – das Elektroskop ist wieder neutral.","einen doppelt so großen Ausschlag.","einen Ausschlag nach links."],c:0},
+   {q:"Was bedeutet „elektrisch neutral“?",o:["Ein Körper hat gleich viele positive und negative Ladungen.","Ein Körper enthält keine Ladungen.","Ein Körper hat nur positive Ladungen, die festsitzen."],c:0}
+  ],
+  info:"Alle Körper bestehen aus Atomen. Jedes Atom hat einen positiv geladenen Kern und negativ geladene Elektronen in der Hülle – im Normalfall gleich viele positive und negative Ladungen. Ein solcher Körper ist <b>elektrisch neutral</b>: Die Wirkungen heben sich auf, das Elektroskop zeigt nichts an. „Geladen“ heißt also immer: Es gibt einen <b>Überschuss</b> an Elektronen (negativ) oder einen <b>Mangel</b> (positiv). Beim Reiben wechseln nur Elektronen den Körper; Stab und Tuch sind danach entgegengesetzt gleich stark geladen, zusammen also weiterhin neutral.",
+  merk:"Ein Körper ist elektrisch neutral, wenn er gleich viele positive und negative Ladungen hat. Geladen ist er bei Elektronenüberschuss (negativ) oder Elektronenmangel (positiv). Ladung wird beim Reiben nur getrennt, nicht erzeugt – die Gesamtladung bleibt erhalten."
+},
+{
+  id:"v6",tab:"V7 Menge",title:"V7: Kraft und Ladungsmenge",
+  lead:"Wie hängt die elektrische Kraft von der <b>Menge der Ladung</b> ab? Mit dem Ladungslöffel bringst du immer ungefähr gleich große Ladungsportionen auf das Elektroskop.",
+  real:"Im Unterricht: Mit einem Ladungslöffel wurde nacheinander immer wieder Ladung von einer geladenen Kugel auf das Elektroskop gebracht.",
+  scene:{es:[640],spoon:true},
+  steps:[
+   "Tippe auf „Entladen“. Nimm den ersten Messwert bei 0 Portionen auf.",
+   "Tippe auf „Ladungsportion übertragen“: Der Löffel holt Ladung von der Kugel und berührt den Teller.",
+   "Warte, bis der Zeiger ruht, und nimm den Messwert auf.",
+   "Wiederhole bis 6 Portionen.",
+   "Betrachte das Diagramm und bilde den Je-desto-Satz.",
+   "Zusatz: Wiederhole mit negativ geladener Kugel. Ändert sich der Zusammenhang?"],
+  table:{cols:[{k:"n",l:"Ladungs­portionen",d:0},{k:"s",l:"Ausschlag in Skt",d:1},{k:"f",l:"F<sub>el</sub> am Zeiger in mN",d:1}],
+    rec:r=>{const e=r.es[0];return{n:r.n,s:skt(e.th),f:FG*Math.tan(e.th)};},x:"n",y:"s",xl:"Ladungsportionen",yl:"Ausschlag in Skt",needRest:true},
+  jd:[{qty:["die Ladungsmenge","der Abstand","die Masse des Zeigers"],res:["der Ausschlag","die elektrische Kraft","die Gewichtskraft"],
+       ok:[{q:"die Ladungsmenge",r:["der Ausschlag","die elektrische Kraft"],rel:1}],hint:"Mehr Ladung → größere elektrische Kraft zwischen Metallstab und Zeiger → größerer Ausschlag."}],
+  qs:[
+   {q:"Warum benutzt man einen Ladungslöffel?",o:["Damit jedes Mal ungefähr gleich viel Ladung übertragen wird.","Damit die Ladung nicht verloren geht.","Weil man Ladung anders nicht übertragen kann."],c:0,
+    ex:"So kann man die Ladungsmenge „zählen“: 2 Portionen ≈ doppelte Ladung. (Streng genommen gibt der Löffel etwas weniger ab, je stärker das Elektroskop schon geladen ist; die Simulation vernachlässigt das.)"},
+   {q:"Spielt es eine Rolle, ob die Ladung positiv oder negativ ist?",o:["Nein – der Ausschlag hängt von der Menge ab, nicht von der Ladungsart.","Ja – bei negativer Ladung schlägt der Zeiger nach links aus.","Ja – negative Ladung erzeugt keinen Ausschlag."],c:0,
+    ex:"Metallstab und Zeiger sind immer gleichnamig geladen – egal ob positiv oder negativ – und stoßen sich ab."},
+   {q:"Doppelt so viele Portionen ergeben…",o:["einen größeren Ausschlag – aber nicht genau den doppelten.","genau den doppelten Ausschlag.","den gleichen Ausschlag."],c:0,
+    ex:"Der Ausschlag wächst mit der Ladung, ist aber nicht proportional zu ihr. Für den Je-desto-Satz reicht: größer → größer."}
+  ],
+  info:"Jede Ladungsportion vergrößert die Ladung auf dem Elektroskop. Damit wird die Abstoßung zwischen Metallstab und Zeiger stärker: Die elektrische Kraft wächst, der Zeiger schlägt weiter aus, bis wieder Gleichgewicht mit der Gewichtskraft herrscht (siehe V4).",
+  merk:"Je größer die Ladungsmenge, desto größer die elektrische Kraft (und damit der Ausschlag)."
+},
+{
+  id:"v7",tab:"V8 Abstand",title:"V8: Kraft und Entfernung",
+  lead:"Wie hängt die elektrische Wirkung vom <b>Abstand</b> zwischen geladenem Stab und Elektroskop ab? Der Stab berührt den Teller nicht (Influenz).",
+  real:"Im Unterricht: Der geladene Stab wurde in verschiedenen Abständen über den Teller gehalten und der Ausschlag abgelesen.",
+  scene:{es:[620],rods:["pvc"],slider:true,dist:true,view:{x0:150,x1:1000,y0:-240,y1:640}},
+  steps:[
+   "Der Kunststoffstab ist geladen (6× gerieben). Stelle mit dem Regler – oder durch Ziehen am Stab – den Abstand d ein.",
+   "Beginne bei d = 10 cm und verringere den Abstand schrittweise (z. B. 10, 8, 6, 5, 4, 3, 2 cm). Nimm jeweils einen Messwert auf.",
+   "Betrachte das Diagramm: Ausschlag in Abhängigkeit vom Abstand.",
+   "Zusatz: Halte den Abstand fest (z. B. 4 cm) und verändere die Ladung des Stabs (entladen, dann 2×, 4×, 6× reiben).",
+   "Bilde die beiden Je-desto-Sätze."],
+  table:{cols:[{k:"d",l:"Abstand d in cm",d:1},{k:"rb",l:"Stab gerieben",d:0},{k:"s",l:"Ausschlag in Skt",d:1},{k:"f",l:"F<sub>el</sub> am Zeiger in mN",d:1}],
+    rec:r=>{const e=r.es[0];return{d:e.d,rb:r.rubs,s:skt(e.th),f:FG*Math.tan(e.th)};},x:"d",y:"s",xl:"Abstand d in cm",yl:"Ausschlag in Skt",needRest:true},
+  jd:[{qty:["der Abstand","die Ladung des Stabs","die Masse des Zeigers"],res:["der Ausschlag","die elektrische Kraft","die Gewichtskraft"],
+       ok:[{q:"der Abstand",r:["der Ausschlag","die elektrische Kraft"],rel:-1}],hint:"Je näher der Stab, desto stärker wirkt seine elektrische Kraft auf die Elektronen im Elektroskop – es werden mehr verschoben, der Ausschlag wächst."},
+      {qty:["der Abstand","die Ladung des Stabs","die Masse des Zeigers"],res:["der Ausschlag","die elektrische Kraft","die Gewichtskraft"],
+       ok:[{q:"die Ladung des Stabs",r:["der Ausschlag","die elektrische Kraft"],rel:1}],hint:"Bei gleichem Abstand gilt: mehr Ladung → größere Kraft."}],
+  qs:[
+   {q:"Halbiert man den Abstand (z. B. von 8 cm auf 4 cm), wird der Ausschlag…",o:["deutlich größer.","genau halb so groß.","gleich groß."],c:0,
+    ex:"Die elektrische Kraft wächst stark, wenn der Abstand kleiner wird."},
+   {q:"Warum geht der Zeiger zurück, wenn der Stab weit weg ist?",o:["Die elektrische Kraft des Stabs auf die Elektronen im Elektroskop wird mit wachsendem Abstand schwächer – es werden weniger Ladungen verschoben.","Der Stab verliert seine Ladung.","Die Gewichtskraft wird größer."],c:0}
+  ],
+  info:"Der Stab übt eine elektrische Kraft auf die beweglichen Elektronen im Elektroskop aus. Je näher er ist, desto größer ist diese Kraft und desto mehr Ladung wird verschoben (Influenz). Damit wird auch die Abstoßung zwischen Metallstab und Zeiger größer – der Ausschlag wächst. Der Ausschlag zeigt also <i>indirekt</i>, wie stark der Stab wirkt. Mit wachsendem Abstand nimmt die elektrische Kraft rasch ab.",
+  merk:"Je kleiner der Abstand, desto größer die elektrische Kraft. Je größer die Ladung, desto größer die elektrische Kraft."
+},
+{
+  id:"merk",tab:"Merksätze",title:"Zusammenfassung: Merksätze",
+  lead:"Überlege zuerst selbst, was du in jedem Versuch herausgefunden hast. Tippe dann auf einen Versuch, um den Merksatz aufzudecken.",
+  scene:{es:[600],view:{x0:250,x1:960,y0:120,y1:640}},summary:true
+}
+];
+
+/* ============ Laufzeitzustand ============ */
+let cur=null,curIdx=0,chargeMode=0;
+const cache={};
+const panel=$("#panel"), stage=$("#stage"), ov=$("#ov");
+
+function makeRuntime(cfg){
+  const sc=cfg.scene;
+  const r={cfg,sc,
+    es:(sc.es||[]).map(cx=>({cx,Q:0,th:0,om:0,grounded:false,qs:0,low:0,d:99,contact:false,finger:0,kq:0})),
+    rods:{pvc:{Q:0},glas:{Q:0}},clothQ:{pvc:0,glas:0},rodType:(sc.rods&&sc.rods[0])||null,
+    tip:{x:135,y:440},rubAcc:0,rubs:0,bridge:null,elOff:false,lamp:null,anim:null,n:0,srcSign:1,sign:1,wrap:false,msg:""};
+  if(sc.slider){r.rods.pvc.Q=-24;r.rubs=6;r.tip={x:sc.es[0],y:PY-10*PX};}
+  return r;
+}
+
+/* ============ Physik (unverändert im Modell, Koordinaten in px) ============ */
+function plateDist(t,cx){const dx=Math.max(cx-60-t.x,0,t.x-(cx+60)),dy=Math.max(PY-t.y,0,t.y-(PY+12));return Math.hypot(dx,dy);}
+function constrainTip(t,prev){
+  const r=cur;
+  t.x=clamp(t.x,20,980); t.y=clamp(t.y,50,600);
+  if(r.sc.cloth&&!r.wrap&&t.x>20&&t.x<250) t.y=Math.min(t.y,580);
+  r.es.forEach(e=>{
+    if(Math.abs(t.x-e.cx)<HR+14&&t.y>PY){
+      if(prev.y<=PY+0.5) t.y=PY; else t.x=t.x<e.cx?e.cx-HR-14:e.cx+HR+14;
+    }
+  });
+  return t;
+}
+function curRod(){return cur.rodType?cur.rods[cur.rodType]:null;}
+function rodEff(){const rod=curRod();if(!rod)return 0;return rod.Q+(cur.wrap?cur.clothQ[cur.rodType]:0);}
+function rub(){
+  const r=cur,R=RODS[r.rodType],rod=curRod();if(!rod)return;
+  if(Math.abs(rod.Q)>=RODMAX){setMsg(`${R.name} ist schon stark geladen.`);return;}
+  rod.Q=clamp(rod.Q+R.sign*RUB,-RODMAX,RODMAX);
+  r.clothQ[r.rodType]=clamp(r.clothQ[r.rodType]-R.sign*RUB,-RODMAX,RODMAX);
+  r.rubs++;
+  setMsg(r.wrap?`Stab im Tuch gerieben (${r.rubs}×).`:`${R.name} am ${R.cloth} gerieben (${r.rubs}×).`);
+  const ri=$("#rubInfo");if(ri)ri.textContent=`Stab gerieben: ${r.rubs}×`;
+}
+function step(dt){
+  const r=cur;if(!r)return;
+  const rod=curRod(),qr=rodEff();
+  r.es.forEach((e,i)=>{
+    if(rod){e.d=plateDist(r.tip,e.cx)/PX;e.qs=qr*0.7/(1+Math.pow(e.d/D0,2));}else{e.d=99;e.qs=0;}
+    const touch=rod&&e.d*PX<=0.6;
+    if(touch&&!e.contact){
+      if(r.wrap) setMsg("Stab mit Tuch berührt den Teller: Zusammen sind Stab und Tuch neutral – es geht keine Ladung über.");
+      else if(Math.abs(rod.Q)>0.3){const dq=0.4*rod.Q;e.Q+=dq;rod.Q-=dq;setMsg(`Berührung: Ladung vom ${RODS[r.rodType].name} auf E${i+1} übertragen.`);}
+      else setMsg("Berührung – aber der Stab ist nicht geladen.");
+    }
+    e.contact=touch;
+    if(e.finger>0)e.finger-=dt;
+  });
+  if(r.bridge==="metal"&&r.es.length===2){
+    const[a,b]=r.es;
+    if(a.grounded||b.grounded){a.Q=b.Q=-(a.qs+b.qs)/(2*0.7);}else{const m=(a.Q+b.Q)/2;a.Q=b.Q=m;}
+  }else r.es.forEach(e=>{if(e.grounded)e.Q=-e.qs/0.7;});
+  if(r.lamp){const e=r.es[r.lamp.i];r.lamp.t+=dt;e.Q*=Math.exp(-dt*2.5);if(r.lamp.t>1.8){e.Q=0;r.lamp=null;}}
+  if(r.anim){const A=r.anim;A.t+=dt;const p=A.t/A.dur;
+    if(p>=0.5&&!A.done){A.done=true;r.es[0].Q+=r.srcSign*PORTION;r.n++;setMsg(`Ladungsportion ${r.n} übertragen.`);const ni=$("#nInfo");if(ni)ni.textContent=`Übertragene Portionen: ${r.n}`;}
+    if(p>=1)r.anim=null;}
+  r.es.forEach(e=>{
+    e.low=0.7*e.Q+e.qs;
+    e.kq=r.elOff?0:KL*e.low*e.low;
+    const sub=6,h=dt/sub;
+    for(let k=0;k<sub;k++){
+      const acc=42*(e.kq*Math.cos(e.th)-Math.sin(e.th))-4.2*e.om;
+      e.om+=acc*h;e.th+=e.om*h;
+      if(e.th<0){e.th=0;if(e.om<0)e.om=-e.om*0.15;}
+      if(e.th>TH_MAX){e.th=TH_MAX;if(e.om>0)e.om=0;}
+    }
+  });
+}
+
+/* ============ 3D ============ */
+let renderer,scene,camera,world,chgPool=[],R={};
+const cam={yaw:-0.32,pitch:0.2,dist:12,zoom:1,target:null};
+const MAT={};
+function std(c,o){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.55,metalness:.05},o||{}));}
+function initThree(){
+  try{renderer=new THREE.WebGLRenderer({antialias:true});}catch(e){$("#nogl").style.display="flex";return false;}
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  stage.insertBefore(renderer.domElement,stage.firstChild);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0xe9eef5);
+  camera=new THREE.PerspectiveCamera(32,1,0.1,200);cam.target=new THREE.Vector3();
+  scene.add(new THREE.HemisphereLight(0xffffff,0xa7b0bd,0.55));
+  const dl=new THREE.DirectionalLight(0xffffff,0.6);dl.position.set(-4,10,7);dl.castShadow=true;
+  dl.shadow.mapSize.set(1024,1024);Object.assign(dl.shadow.camera,{left:-8,right:8,top:8,bottom:-3,near:1,far:30});scene.add(dl);
+  const fill=new THREE.DirectionalLight(0xffffff,0.25);fill.position.set(5,3,6);scene.add(fill);
+  const table=new THREE.Mesh(new THREE.BoxGeometry(16,3,6),std(0xb89b70,{roughness:.85}));table.position.set(0,-1.5,0.6);table.receiveShadow=true;scene.add(table);
+  const wall=new THREE.Mesh(new THREE.PlaneGeometry(40,20),std(0xe8edf4,{roughness:1}));wall.position.set(0,6,-2.4);wall.receiveShadow=true;scene.add(wall);
+  MAT.metal=std(0xcfd6df,{metalness:.55,roughness:.28});
+  MAT.darkMetal=std(0x8b95a3,{metalness:.5,roughness:.35});
+  MAT.base=std(0x334155,{roughness:.6});
+  MAT.iso=std(0xfcd34d,{roughness:.45});
+  MAT.pointer=std(0x1e293b,{metalness:.3,roughness:.4});
+  MAT.skin=std(0xf2c7a5,{roughness:.7});
+  MAT.glass=new THREE.MeshStandardMaterial({color:0xdbeafe,transparent:true,opacity:.13,roughness:.05,depthWrite:false});
+  MAT.pvc=std(0x374151,{roughness:.35});
+  MAT.glasRod=new THREE.MeshStandardMaterial({color:0xbfe9fb,transparent:true,opacity:.6,roughness:.08,metalness:.1});
+  MAT.grip=std(0x78716c,{roughness:.8});
+  MAT.white=std(0xfafaf9,{roughness:.5});
+  Object.values(MAT).forEach(m=>m.userData.keep=true);
+  MAT.wool=std(0xffffff,{map:patternTex("wool"),roughness:.95});MAT.silk=std(0xffffff,{map:patternTex("silk"),roughness:.6});
+  MAT.wool.userData.keep=MAT.silk.userData.keep=true;
+  const tp=chargeTex(1),tm=chargeTex(-1);
+  for(let i=0;i<300;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tp,depthTest:true,transparent:true}));s.scale.set(.15,.15,1);s.visible=false;s.renderOrder=20;scene.add(s);chgPool.push(s);}
+  R.texP=tp;R.texM=tm;
+  world=new THREE.Group();scene.add(world);
+  return true;
+}
+function patternTex(kind){
+  const c=document.createElement("canvas");c.width=c.height=128;const x=c.getContext("2d");
+  if(kind==="wool"){x.fillStyle="#c8a97e";x.fillRect(0,0,128,128);x.strokeStyle="#a8875a";x.lineWidth=3;
+    for(let y=0;y<128;y+=12){x.beginPath();for(let i=0;i<=128;i+=8)x.lineTo(i,y+(i%16?4:-2));x.stroke();}}
+  else{x.fillStyle="#fbcfe8";x.fillRect(0,0,128,128);x.strokeStyle="#f9a8d4";x.lineWidth=4;for(let i=-128;i<256;i+=18){x.beginPath();x.moveTo(i,128);x.lineTo(i+128,0);x.stroke();}}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,2);t.encoding=THREE.sRGBEncoding;return t;
+}
+function chargeTex(s){
+  const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");
+  x.beginPath();x.arc(32,32,29,0,7);x.fillStyle=s>0?"#dc2626":"#2563eb";x.fill();x.lineWidth=4;x.strokeStyle="#fff";x.stroke();
+  x.strokeStyle="#fff";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(17,32);x.lineTo(47,32);if(s>0){x.moveTo(32,17);x.lineTo(32,47);}x.stroke();
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;
+}
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.lineTo(a+w-r,b);x.quadraticCurveTo(a+w,b,a+w,b+r);x.lineTo(a+w,b+h-r);x.quadraticCurveTo(a+w,b+h,a+w-r,b+h);x.lineTo(a+r,b+h);x.quadraticCurveTo(a,b+h,a,b+h-r);x.lineTo(a,b+r);x.quadraticCurveTo(a,b,a+r,b);x.closePath();}
+/* Text als Sprite (immer zur Kamera gedreht) – mit set() änderbar */
+function label(text,o){
+  o=o||{};const fs=o.fs||40,cw=o.cw||512,ch=Math.round(fs*1.5);
+  const c=document.createElement("canvas");c.width=cw;c.height=ch;const x=c.getContext("2d");
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;
+  const m=new THREE.SpriteMaterial({map:t,transparent:true,depthTest:o.depthTest!==false});
+  const s=new THREE.Sprite(m);const hgt=o.h||0.24;s.scale.set(hgt*cw/ch,hgt,1);s.renderOrder=30;
+  let last=null;
+  s.set=function(txt){if(txt===last)return;last=txt;x.clearRect(0,0,cw,ch);x.font=`600 ${fs}px -apple-system,Helvetica,Arial,sans-serif`;
+    const w=Math.min(cw-4,x.measureText(txt).width+fs*0.8);const a=(cw-w)/2;
+    if(o.bg!==null){x.fillStyle=o.bg||"rgba(255,255,255,0.9)";rr(x,a,2,w,ch-4,ch/3);x.fill();if(o.border){x.strokeStyle=o.border;x.lineWidth=3;x.stroke();}}
+    x.fillStyle=o.color||"#0f2a4a";x.textBaseline="middle";
+    if(o.sub&&txt.indexOf("_")>0){const[m,sb]=txt.split("_");const wm=x.measureText(m).width;x.font=`600 ${Math.round(fs*.65)}px -apple-system,Helvetica,Arial,sans-serif`;const ws=x.measureText(sb).width;
+      x.textAlign="left";const st=(cw-wm-ws)/2;x.fillText(sb,st+wm,ch/2+fs*.25);x.font=`600 ${fs}px -apple-system,Helvetica,Arial,sans-serif`;x.fillText(m,st,ch/2+1);}
+    else{x.textAlign="center";x.fillText(txt,cw/2,ch/2+1);}t.needsUpdate=true;};
+  s.set(text);return s;
+}
+/* Text auf einer festen Fläche (z. B. Anzeige am Fuß) */
+function plateLabel(wd,ht,o){
+  const cw=512,ch=Math.round(cw*ht/wd),c=document.createElement("canvas");c.width=cw;c.height=ch;const x=c.getContext("2d");
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(wd,ht),new THREE.MeshBasicMaterial({map:t,transparent:true}));
+  let last=null;m.set=function(txt){if(txt===last)return;last=txt;x.clearRect(0,0,cw,ch);x.fillStyle=o.bg;rr(x,0,0,cw,ch,ch/4);x.fill();
+    x.fillStyle=o.color;x.font=`700 ${Math.round(ch*0.62)}px -apple-system,Helvetica,Arial,sans-serif`;x.textAlign="center";x.textBaseline="middle";x.fillText(txt,cw/2,ch/2+2);t.needsUpdate=true;};
+  return m;
+}
+function scaleTex(){
+  const N=512,c=document.createElement("canvas");c.width=c.height=N;const x=c.getContext("2d"),k=N/2/1.17,cx=N/2;
+  const g=x.createRadialGradient(cx*0.8,cx*0.7,10,cx,cx,N/2);g.addColorStop(0,"#ffffff");g.addColorStop(1,"#e3eaf3");x.fillStyle=g;x.fillRect(0,0,N,N);
+  x.strokeStyle="#cbd5e1";x.lineWidth=3;x.beginPath();x.arc(cx,cx,1.1*k,-Math.PI/2,0);x.stroke();
+  for(let i=0;i<=10;i++){const a=i*9*Math.PI/180,s=Math.sin(a),co=Math.cos(a),r1=(i%2?1.0:0.95)*k,r2=1.09*k;
+    x.strokeStyle="#334155";x.lineWidth=i%2?3:5;x.beginPath();x.moveTo(cx+r1*s,cx-r1*co);x.lineTo(cx+r2*s,cx-r2*co);x.stroke();
+    if(i%2===0){x.fillStyle="#1e293b";x.font="700 30px -apple-system,Helvetica,Arial,sans-serif";x.textAlign="center";x.textBaseline="middle";const rl=0.84*k;x.fillText(i,cx+rl*s+(i===0?18:0),cx-rl*co);}}
+  x.fillStyle="#64748b";x.font="600 22px -apple-system,Helvetica,Arial,sans-serif";x.textAlign="center";x.fillText("Skt",cx+0.55*k,cx-0.3*k);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;return t;
+}
+function mesh(geo,mat,shadow){const m=new THREE.Mesh(geo,mat);if(shadow!==false){m.castShadow=true;m.receiveShadow=true;}return m;}
+function cyl(r,h,mat,seg){return mesh(new THREE.CylinderGeometry(r,r,h,seg||24),mat);}
+function line3(pts,color,dashed){
+  const g=new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
+  const m=dashed?new THREE.LineDashedMaterial({color,dashSize:.1,gapSize:.07}):new THREE.LineBasicMaterial({color});
+  const l=new THREE.Line(g,m);if(dashed)l.computeLineDistances();return l;
+}
+
+function buildES(e,i){
+  const g=new THREE.Group();g.position.x=W(e.cx);world.add(g);
+  const base=mesh(new THREE.BoxGeometry(1.7,.26,.9),MAT.base);base.position.y=.13;g.add(base);
+  const rd=plateLabel(1.5,.2,{bg:"#334155",color:"#ffffff"});rd.position.set(0,.13,.452);g.add(rd);
+  const yHb=H(HC+HR),yC=H(HC);
+  const col=cyl(.07,yHb-.26,MAT.darkMetal);col.position.y=(.26+yHb)/2;g.add(col);
+  const ring=mesh(new THREE.TorusGeometry(1.2,.07,16,72),MAT.darkMetal);ring.position.y=yC;g.add(ring);
+  const band=mesh(new THREE.CylinderGeometry(1.2,1.2,.3,72,1,true),std(0xaab4c2,{side:THREE.DoubleSide,metalness:.4,roughness:.4}));band.rotation.x=Math.PI/2;band.position.y=yC;g.add(band);
+  const back=mesh(new THREE.CircleGeometry(1.17,72),new THREE.MeshStandardMaterial({map:R.scaleTex,roughness:.8}),false);back.position.set(0,yC,-.13);back.receiveShadow=true;g.add(back);
+  const ring2=mesh(new THREE.TorusGeometry(1.2,.05,12,72),MAT.darkMetal);ring2.position.set(0,yC,.15);g.add(ring2);
+  const glass=new THREE.Mesh(new THREE.CircleGeometry(1.17,72),MAT.glass);glass.position.set(0,yC,.15);glass.renderOrder=5;g.add(glass);
+  const iso=cyl(.16,.34,MAT.iso);iso.position.y=H(HC-HR)+.02;g.add(iso);
+  const yTop=H(PY+10),yBot=H(HC+70);
+  const stem=cyl(.045,yTop-yBot,MAT.metal);stem.position.y=(yTop+yBot)/2;g.add(stem);
+  const plate=cyl(.6,.12,MAT.metal,48);plate.position.y=H(PY+6);g.add(plate);
+  const ptr=new THREE.Group();ptr.position.set(0,yC,.07);g.add(ptr);
+  const bar=mesh(new THREE.BoxGeometry(.065,2*PL/100,.035),MAT.pointer);ptr.add(bar);
+  const tipW=mesh(new THREE.ConeGeometry(.045,.12,12),MAT.pointer);tipW.position.y=PL/100+.04;ptr.add(tipW);
+  const ax=cyl(.07,.12,MAT.metal);ax.rotation.x=Math.PI/2;ax.position.set(0,yC,.09);g.add(ax);
+  const fing=new THREE.Group();fing.visible=false;g.add(fing);
+  const f1=cyl(.1,1.1,MAT.skin);f1.rotation.z=Math.PI/2;f1.position.set(1.22,H(PY)+.06,0);fing.add(f1);
+  const f2=mesh(new THREE.SphereGeometry(.1,16,12),MAT.skin);f2.position.set(.67,H(PY)+.06,0);fing.add(f2);
+  const fl=label("Finger (Erdung)",{h:.2});fl.position.set(1.25,H(PY)+.38,0);fing.add(fl);
+  const nm=label("E"+(i+1),{h:.22,bg:null,color:"#334155"});nm.position.set(-1.0,yC-1.05,.3);g.add(nm);
+  return{g,ptr,fing,rd};
+}
+function buildRod(){
+  const g=new THREE.Group();world.add(g);
+  const body=cyl(.09,2.7,MAT.pvc);body.position.y=1.35;g.add(body);
+  const tip=mesh(new THREE.SphereGeometry(.09,16,12),MAT.pvc);g.add(tip);
+  const grip=cyl(.115,.78,MAT.grip);grip.position.y=2.7-.39;g.add(grip);
+  const hit=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,3.1,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));hit.position.y=1.45;g.add(hit);
+  const lb=label("",{h:.22});lb.position.y=2.95;g.add(lb);
+  const sleeve=cyl(.2,1.15,MAT.wool);sleeve.position.y=.7;sleeve.visible=false;g.add(sleeve);
+  R.rod={g,body,tip,hit,lb,sleeve};
+}
+function updateRodLook(){
+  if(!R.rod||!cur.rodType)return;const Rd=RODS[cur.rodType];
+  const m=Rd.glass?MAT.glasRod:MAT.pvc;R.rod.body.material=m;R.rod.tip.material=m;R.rod.lb.set(Rd.name);
+  if(R.cloth){R.cloth.material=Rd.glass?MAT.silk:MAT.wool;R.clothL.set(Rd.cloth);}
+  R.rod.sleeve.material=Rd.glass?MAT.silk:MAT.wool;
+}
+function disposeWorld(){
+  world.traverse(o=>{if(o.geometry)o.geometry.dispose();const m=o.material;if(m&&!m.userData.keep){if(m.map&&m.map!==R.scaleTex)m.map.dispose();m.dispose();}});
+  while(world.children.length)world.remove(world.children[0]);
+}
+function buildScene(){
+  if(!renderer)return;
+  const r=cur,sc=r.sc;disposeWorld();R.es=[];R.rod=null;R.cloth=null;R.aG=null;R.spoon=null;R.lamp=null;R.brMetal=null;R.brIso=null;
+  if(!R.scaleTex)R.scaleTex=scaleTex();
+  r.es.forEach((e,i)=>R.es.push(buildES(e,i)));
+  if(sc.cloth){R.cloth=mesh(new THREE.BoxGeometry(2.1,.2,1.0),MAT.wool);R.cloth.position.set(W(135),.1,.2);world.add(R.cloth);
+    R.clothL=label("Wolltuch",{h:.2});R.clothL.position.set(W(135),.48,.75);world.add(R.clothL);}
+  if(sc.rods&&sc.rods.length){buildRod();updateRodLook();}
+  if(sc.labels)buildLabels(r.es[0].cx);
+  if(sc.bridge)buildBridge();
+  if(sc.lamp)buildLamp();
+  if(sc.spoon)buildSpoon();
+  if(sc.forces)buildForces();
+  if(sc.dist){R.dist=line3([[0,0,0],[0,1,0]],0xd97706,true);R.dist.renderOrder=25;world.add(R.dist);R.distL=label("",{h:.24,color:"#9a3412",bg:"rgba(255,247,237,.95)",border:"#d97706"});world.add(R.distL);}
+  else{R.dist=null;R.distL=null;}
+  ov.innerHTML="";R.ovKey="";
+  cam.zoom=1;fitCamera();
+}
+function buildLabels(cx){
+  const X=W(cx),items=[["Teller",[X-.5,H(PY+6),0],[X-2.2,H(PY-30),0]],["Metallstab",[X-.04,H(PY+40),0],[X-2.2,H(PY+40),0]],["Isolator",[X-.16,H(HC-HR),0],[X-2.2,H(HC-HR+5),0]],
+    ["Drehachse",[X-.06,H(HC),.1],[X-2.2,H(HC),0]],["Zeiger",[X+.0,H(HC+70),.1],[X-2.2,H(HC+80),0]],["Skala",[X+.75,H(HC-72),-.1],[X+2.2,H(HC-150),0]],["Gehäuse",[X+1.24,H(HC+40),0],[X+2.2,H(HC+60),0]]];
+  items.forEach(([t,a,b])=>{world.add(line3([a,b],0x0f2a4a));const s=label(t,{h:.26,border:"#0f2a4a"});s.position.set(b[0]+(b[0]<X?-.45:.45),b[1],b[2]);world.add(s);
+    const d=mesh(new THREE.SphereGeometry(.035,8,6),new THREE.MeshBasicMaterial({color:0x0f2a4a}),false);d.position.set(...a);world.add(d);});
+}
+function buildBridge(){
+  const[a,b]=cur.es,x1=W(a.cx),x2=W(b.cx),y=H(PY)+.07,m=(x1+x2)/2;
+  const mk=(mat,txt)=>{const g=new THREE.Group();const bar=mesh(new THREE.BoxGeometry(x2-x1+.3,.09,.12),mat);bar.position.set(m,y,0);g.add(bar);
+    const h=cyl(.06,1.1,MAT.iso);h.position.set(m,y+.6,0);g.add(h);const l=label(txt,{h:.22});l.position.set(m,y+1.35,0);g.add(l);g.visible=false;world.add(g);return g;};
+  R.brMetal=mk(MAT.metal,"Metallbügel (Leiter)");R.brIso=mk(MAT.white,"Kunststoffbügel (Isolator)");
+}
+function glowTex(){const c=document.createElement("canvas");c.width=c.height=128;const x=c.getContext("2d");const g=x.createRadialGradient(64,64,4,64,64,64);
+  g.addColorStop(0,"rgba(255,250,200,1)");g.addColorStop(.35,"rgba(251,146,60,.9)");g.addColorStop(1,"rgba(251,146,60,0)");x.fillStyle=g;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
+function buildLamp(){
+  const g=new THREE.Group();g.visible=false;world.add(g);const y0=H(PY)+.07;
+  const tube=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,1.1,24),new THREE.MeshStandardMaterial({color:0xf1f5f9,transparent:true,opacity:.35,roughness:.05,depthWrite:false}));tube.position.y=y0+.6;g.add(tube);
+  const e1=cyl(.025,.4,MAT.darkMetal);e1.position.y=y0+.3;g.add(e1);const e2=cyl(.025,.4,MAT.darkMetal);e2.position.y=y0+.95;g.add(e2);
+  const hand=mesh(new THREE.SphereGeometry(.17,16,12),MAT.skin);hand.position.y=y0+1.32;g.add(hand);
+  const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex(),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));gl.scale.set(.75,.75,1);gl.renderOrder=40;g.add(gl);
+  const l1=label("Hand",{h:.2});l1.position.set(.55,y0+1.32,0);g.add(l1);const l2=label("Glimmlampe",{h:.2});l2.position.set(.75,y0+.62,0);g.add(l2);
+  R.lamp={g,gl,y0};
+}
+function buildSpoon(){
+  const sx=W(190),sy=H(300);
+  const col=cyl(.1,sy-.55-.26,MAT.iso);col.position.set(sx,(.26+sy-.55)/2,0);world.add(col);
+  const b=mesh(new THREE.BoxGeometry(1.3,.26,.8),MAT.base);b.position.set(sx,.13,0);world.add(b);
+  const sph=mesh(new THREE.SphereGeometry(.55,40,28),MAT.metal);sph.position.set(sx,sy,0);world.add(sph);
+  R.srcL=label("Kugel (positiv geladen)",{h:.22});R.srcL.position.set(sx,.6,.7);world.add(R.srcL);
+  const sp=new THREE.Group();world.add(sp);
+  const head=mesh(new THREE.SphereGeometry(.12,16,12),MAT.metal);sp.add(head);
+  const hd=cyl(.035,1.3,MAT.iso);hd.position.y=.72;sp.add(hd);
+  const l=label("Ladungslöffel",{h:.2});l.position.y=1.55;sp.add(l);
+  R.spoon=sp;
+}
+function buildForces(){
+  R.aG=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(),1,0x059669,.18,.12);
+  R.aE=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(),1,0x7c3aed,.18,.12);
+  [R.aG,R.aE].forEach(a=>{a.line.material.linewidth=3;a.renderOrder=35;a.line.material.depthTest=false;a.cone.material.depthTest=false;world.add(a);});
+  // dickere Schäfte als Zylinder (Linien sind auf dem iPad nur 1 px breit)
+  R.sG=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1,10),new THREE.MeshBasicMaterial({color:0x059669,depthTest:false}));R.sG.renderOrder=35;world.add(R.sG);
+  R.sE=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1,10),new THREE.MeshBasicMaterial({color:0x7c3aed,depthTest:false}));R.sE.renderOrder=35;world.add(R.sE);
+  R.lG=label("F_G",{h:.3,color:"#059669",sub:true});R.lE=label("F_el",{h:.3,color:"#7c3aed",sub:true});world.add(R.lG);world.add(R.lE);
+  R.dS=new THREE.Mesh(new THREE.SphereGeometry(.05,12,8),new THREE.MeshBasicMaterial({color:0x059669,depthTest:false}));R.dS.renderOrder=36;world.add(R.dS);
+  R.lS=label("S",{h:.2,color:"#059669",bg:null});world.add(R.lS);
+}
+function view(){
+  const sc=cur.sc;if(sc.view)return sc.view;
+  if(sc.rods&&sc.rods.length)return{x0:0,x1:1000,y0:-40,y1:640};
+  return{x0:0,x1:1000,y0:60,y1:640};
+}
+function fitCamera(){
+  if(!renderer)return;const v=view();
+  cam.target.set((W(v.x0)+W(v.x1))/2,(H(v.y0)+H(v.y1))/2,0);
+  const hw=(v.x1-v.x0)/200,hh=(v.y1-v.y0)/200,t=Math.tan(camera.fov*Math.PI/360);
+  cam.base=Math.max(hh/t,hw/(t*camera.aspect))*1.02+0.8;applyCam();
+}
+function applyCam(){
+  const d=cam.base*cam.zoom;
+  camera.position.set(cam.target.x+d*Math.sin(cam.yaw)*Math.cos(cam.pitch),cam.target.y+d*Math.sin(cam.pitch),d*Math.cos(cam.yaw)*Math.cos(cam.pitch));
+  camera.lookAt(cam.target);
+}
+function resize(){
+  if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
+  renderer.setSize(w,h,false);renderer.domElement.style.width=w+"px";renderer.domElement.style.height=h+"px";
+  camera.aspect=w/h;camera.updateProjectionMatrix();if(cur)fitCamera();
+}
+
+/* Ladungssymbole: Positionen in Weltkoordinaten */
+function regionSyms(L,q,per,B,pos,maxEx){
+  if(chargeMode===1){const n=Math.min(maxEx,Math.round(Math.abs(q)/per));for(let i=0;i<n;i++)L.push([...pos(i,n,false),Math.sign(q)]);}
+  else if(chargeMode===2){const ne=clamp(B-Math.round(q/per),0,2*B),tot=Math.max(B,ne);
+    for(let i=0;i<B;i++)L.push([...pos(i,tot,false),1]);for(let i=0;i<ne;i++)L.push([...pos(i,tot,true),-1]);}
+}
+function chargeList(){
+  const r=cur,L=[];if(!chargeMode)return L;
+  r.es.forEach(e=>{
+    const X=W(e.cx),qp=0.3*e.Q-e.qs;
+    regionSyms(L,qp,2,4,(i,n,alt)=>[X-.48+.96*(i+.5)/n+(alt?.05:0),H(PY)+.1+(alt?.15:0),.45],6);
+    const s=Math.sin(e.th),c=Math.cos(e.th),yC=H(HC);
+    regionSyms(L,e.low,2,6,(i,n,alt)=>{
+      const ns=Math.ceil(n/2);
+      if(i<ns){const y=H(PY+45)-(i+.5)*((H(PY+45)-H(HC+55))/ns);return[X-.15-(alt?.13:0),y,.2];}
+      const k=i-ns,up=k%2===0,rad=.32+Math.floor(k/2)*.17,sg=up?1:-1,off=(up?1:-1)*(alt?.2:.1);
+      return[X+sg*rad*s+off*c,yC+sg*rad*c-off*s,.2];
+    },14);
+  });
+  const rod=curRod();
+  if(rod&&R.rod){const X=W(r.tip.x),Y=H(r.tip.y);
+    regionSyms(L,rod.Q,chargeMode===2?4:3,8,(i,n,alt)=>[X+(chargeMode===2?(alt?.07:-.07):0),Y+.12+i*(1.75/Math.max(n,9)),.16],11);
+    const q=r.clothQ[r.rodType];
+    if(r.wrap)regionSyms(L,q,4,8,(i,n,alt)=>[X+((i%2)?.17:-.17)+(alt?.06:0),Y+.2+Math.floor(i/2)*.22+(alt?.1:0),.26],8);
+    else if(R.cloth)regionSyms(L,q,4,8,(i,n,alt)=>[W(135)-.85+(i%8)*.24+(alt?.09:0),.26,.55-(alt?.1:0)-Math.floor(i/8)*.25],8);
+  }
+  if(r.sc.spoon){const sx=W(190),sy=H(300);
+    if(chargeMode===1)for(let k=0;k<10;k++){const a=k/10*2*Math.PI;L.push([sx+.45*Math.cos(a),sy+.45*Math.sin(a),.35,r.srcSign]);}
+    else if(chargeMode===2){for(let k=0;k<8;k++){const a=k/8*2*Math.PI;L.push([sx+.42*Math.cos(a),sy+.42*Math.sin(a),.4,1]);if(r.srcSign<0||k%2)L.push([sx+.42*Math.cos(a+.25),sy+.42*Math.sin(a+.25),.45,-1]);}
+      if(r.srcSign<0)for(let k=0;k<4;k++){const a=k/4*2*Math.PI+.4;L.push([sx+.22*Math.cos(a),sy+.22*Math.sin(a),.5,-1]);}}
+    if(r.anim&&r.anim.t/r.anim.dur<0.5&&R.spoon)L.push([R.spoon.position.x,R.spoon.position.y,.2,r.srcSign]);
+  }
+  return L;
+}
+
+function render3D(){
+  if(!renderer)return;
+  const r=cur,sc=r.sc,rod=curRod();
+  r.es.forEach((e,i)=>{const o=R.es[i];o.ptr.rotation.z=-e.th;o.fing.visible=e.grounded||e.finger>0;o.rd.set(`E${i+1}: ${fmt(skt(e.th))} Skt`);});
+  if(R.rod){R.rod.g.position.set(W(r.tip.x),H(r.tip.y),0);R.rod.sleeve.visible=r.wrap;if(R.cloth){R.cloth.visible=!r.wrap;R.clothL.visible=!r.wrap;}}
+  const L=chargeList();
+  for(let i=0;i<chgPool.length;i++){const s=chgPool[i];if(i<L.length){const p=L[i];s.visible=true;s.position.set(p[0],p[1],p[2]);const tx=p[3]>0?R.texP:R.texM;if(s.material.map!==tx){s.material.map=tx;s.material.needsUpdate=true;}}else s.visible=false;}
+  if(R.dist){
+    const e=rod?r.es.reduce((a,b)=>a.d<b.d?a:b):null;
+    if(e&&e.d<30&&e.d*PX>1){const px=clamp(r.tip.x,e.cx-60,e.cx+60),a=new THREE.Vector3(W(r.tip.x),H(r.tip.y),.15),b=new THREE.Vector3(W(px),H(PY),.15);
+      R.dist.geometry.setFromPoints([a,b]);R.dist.computeLineDistances();R.dist.visible=true;R.distL.visible=true;R.distL.set(`d = ${fmt(e.d)} cm`);R.distL.position.set((a.x+b.x)/2+.65,(a.y+b.y)/2,.2);}
+    else{R.dist.visible=false;R.distL.visible=false;}
+  }
+  if(R.brMetal){R.brMetal.visible=r.bridge==="metal";R.brIso.visible=r.bridge==="iso";}
+  if(R.lamp){const L2=R.lamp;if(r.lamp){L2.g.visible=true;L2.g.position.x=W(r.es[r.lamp.i].cx);L2.gl.position.y=L2.y0+(r.lamp.neg?.3:.95);L2.gl.material.opacity=Math.max(0,1-r.lamp.t/1.8);}else L2.g.visible=false;}
+  if(R.spoon){
+    R.srcL.set(r.srcSign>0?"Kugel (positiv geladen)":"Kugel (negativ geladen)");
+    const rest={x:W(190+55+14),y:H(300)},tgt={x:W(r.es[0].cx),y:H(PY)+.2};let x=rest.x,y=rest.y;
+    if(r.anim){const p=r.anim.t/r.anim.dur,s=p<.5?p/.5:(1-p)/.5,ee=s*s*(3-2*s);x=rest.x+(tgt.x-rest.x)*ee;y=rest.y+(tgt.y-rest.y)*ee+.9*Math.sin(Math.PI*ee);}
+    R.spoon.position.set(x,y,0);
+  }
+  if(R.aG){
+    const e=r.es[0],th=e.th,s=Math.sin(th),c=Math.cos(th),X=W(e.cx),Y=H(HC),z=.3,arm=.6;
+    const S=new THREE.Vector3(X-arm*s,Y-arm*c,z),A=new THREE.Vector3(X+arm*s,Y+arm*c,z);
+    const Fel=FG*e.kq,lg=FG*.045,le=Math.min(Fel*.045,2.4);
+    setArrow(R.aG,R.sG,S,new THREE.Vector3(0,-1,0),lg);R.lG.position.set(S.x-.28,S.y-lg-.1,z);
+    R.dS.position.copy(S);R.lS.position.set(S.x-.2,S.y+.08,z);
+    const vis=Fel>0.2;R.aE.visible=R.sE.visible=R.lE.visible=vis;
+    if(vis){setArrow(R.aE,R.sE,A,new THREE.Vector3(1,0,0),le);R.lE.position.set(A.x+le/2,A.y+.22,z);}
+    const Tel=Fel*c,TG=FG*s,rest=Math.abs(e.om)<.03&&Math.abs(Tel-TG)<.4;
+    const key=[fmt(deg(th),0),fmt(Fel,1),Math.round(Tel*4),Math.round(TG*4),rest,r.elOff].join("|");
+    if(key!==R.ovKey){R.ovKey=key;
+      ov.innerHTML=`<div class="box"><b>Kräfte am Zeiger</b><br>α = ${fmt(deg(th),0)}° · F<sub>G</sub> = 20 mN · F<sub>el</sub> = ${fmt(Fel,1)} mN
+       <div style="margin-top:6px;color:#7c3aed;font-weight:600">Drehwirkung der elektrischen Kraft</div><div class="bar" style="background:#ede9fe"><div class="bar" style="margin:0;width:${Math.min(100,Tel*5)}%;background:#7c3aed"></div></div>
+       <div style="color:#059669;font-weight:600">Drehwirkung der Gewichtskraft</div><div class="bar" style="background:#d1fae5"><div class="bar" style="margin:0;width:${Math.min(100,TG*5)}%;background:#059669"></div></div>
+       <div style="font-weight:700;color:${rest?"#059669":"#d97706"}">${rest?"✓ Gleichgewicht – der Zeiger ruht":"Kein Gleichgewicht – der Zeiger dreht sich"}</div>
+       ${r.elOff?'<div style="color:#b91c1c;font-weight:600;margin-top:4px">Gedankenexperiment: ohne elektrische Kraft</div>':""}</div>`;}
+  }
+  if(sc.neutral){
+    const st=q=>Math.abs(q)<0.6?'<span style="color:#059669">neutral</span>':q<0?'<span style="color:#2563eb">negativ (Elektronenüberschuss)</span>':'<span style="color:#dc2626">positiv (Elektronenmangel)</span>';
+    const rq=rod?rod.Q:0,cq=r.clothQ.pvc,e=r.es[0];
+    const infl=Math.abs(e.Q)<0.6&&Math.abs(e.qs)>1.5;const key=[st(rq),st(cq),st(rq+cq),st(e.Q),r.wrap,infl].join("|");
+    if(key!==R.ovKey){R.ovKey=key;ov.innerHTML=`<div class="box"><b>Ladungszustand</b><br>Stab: ${st(rq)}<br>Tuch: ${st(cq)}<br>${r.wrap?"Stab + Tuch zusammen: "+st(rq+cq)+"<br>":""}Elektroskop: ${st(e.Q)}${infl?" – aber Ladungen verschoben (Influenz)":""}</div>`;}
+  }
+  renderer.render(scene,camera);
+}
+function setArrow(a,shaft,o,dir,len){
+  a.position.copy(o);a.setDirection(dir);a.setLength(Math.max(len,.2),.18,.12);a.line.visible=false;
+  const L=Math.max(len-.18,.02);shaft.scale.set(1,L,1);shaft.position.copy(o).addScaledVector(dir,L/2);
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
+}
+
+/* ============ Touch-Bedienung ============ */
+const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,0,1),0);
+let drag=null,orbit=null;const pts=new Map();
+function ndc(ev){const b=renderer.domElement.getBoundingClientRect();return new THREE.Vector2(((ev.clientX-b.left)/b.width)*2-1,-((ev.clientY-b.top)/b.height)*2+1);}
+function planePx(ev){ray.setFromCamera(ndc(ev),camera);const p=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,p))return null;return{x:p.x*100+500,y:606-p.y*100};}
+function bindPointer(){
+  const el=renderer.domElement;
+  el.addEventListener("pointerdown",ev=>{
+    ev.preventDefault();pts.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+    try{el.setPointerCapture(ev.pointerId);}catch(e){}
+    if(pts.size===2){drag=null;const a=[...pts.values()];orbit={pinch:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),zoom0:cam.zoom};return;}
+    if(R.rod){ray.setFromCamera(ndc(ev),camera);if(ray.intersectObject(R.rod.hit,false).length){const p=planePx(ev);if(p){drag={id:ev.pointerId,ox:p.x-cur.tip.x,oy:p.y-cur.tip.y,lx:cur.tip.x,ly:cur.tip.y};return;}}}
+    orbit={id:ev.pointerId,x:ev.clientX,y:ev.clientY};
+  });
+  el.addEventListener("pointermove",ev=>{
+    if(!pts.has(ev.pointerId))return;ev.preventDefault();pts.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+    if(orbit&&orbit.pinch&&pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);cam.zoom=clamp(orbit.zoom0*orbit.pinch/Math.max(d,1),.45,1.8);applyCam();return;}
+    if(drag&&ev.pointerId===drag.id){
+      const p=planePx(ev);if(!p)return;const r=cur;
+      if(r.sc.slider){let d=clamp((PY-(p.y-drag.oy))/PX,1,10);d=Math.round(d*2)/2;setDist(d);return;}
+      const t=constrainTip({x:p.x-drag.ox,y:p.y-drag.oy},r.tip);
+      if(r.sc.cloth&&!r.wrap&&t.x>20&&t.x<250&&t.y>505){r.rubAcc+=Math.hypot(t.x-drag.lx,t.y-drag.ly);if(r.rubAcc>110){r.rubAcc=0;rub();}}
+      drag.lx=t.x;drag.ly=t.y;r.tip=t;return;
+    }
+    if(orbit&&orbit.id===ev.pointerId){cam.yaw=clamp(cam.yaw-(ev.clientX-orbit.x)*.006,-1.0,1.0);cam.pitch=clamp(cam.pitch+(ev.clientY-orbit.y)*.004,-.05,.75);orbit.x=ev.clientX;orbit.y=ev.clientY;applyCam();}
+  });
+  const end=ev=>{pts.delete(ev.pointerId);if(drag&&drag.id===ev.pointerId)drag=null;if(orbit&&(orbit.id===ev.pointerId||orbit.pinch))orbit=null;};
+  el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
+  el.addEventListener("wheel",ev=>{ev.preventDefault();cam.zoom=clamp(cam.zoom*(1+ev.deltaY*.001),.45,1.8);applyCam();},{passive:false});
+}
+$("#viewReset").addEventListener("click",()=>{cam.yaw=-0.32;cam.pitch=0.2;cam.zoom=1;applyCam();});
+function setDist(d){const r=cur;r.tip={x:r.es[0].cx,y:PY-d*PX};const sl=$("#dSlider"),lb=$("#dVal");if(sl&&+sl.value!==d)sl.value=d;if(lb)lb.textContent=fmt(d)+" cm";}
+
+/* ============ Panel ============ */
+function controlsHTML(cfg){
+  const sc=cfg.scene,r=cur;let h="";
+  if(sc.rods&&sc.rods.length>1)h+=`<div class="lbl-s">Stab wählen</div><div class="seg" style="margin-bottom:8px">${sc.rods.map(k=>`<button class="btn ${r.rodType===k?"on":""}" data-act="rod:${k}">${RODS[k].name}</button>`).join("")}</div>`;
+  if(sc.rods&&sc.rods.length)h+=`<div class="btns"><button class="btn primary" data-act="rub">Stab reiben</button><button class="btn" data-act="rodreset">Stab entladen</button>${sc.slider?"":`<button class="btn" data-act="rodhome">Stab zur Seite</button>`}</div>`;
+  if(sc.wrap)h+=`<div class="btns"><button class="btn ${r.wrap?"on":""}" data-act="wrap">${r.wrap?"Tuch abnehmen":"Tuch um den Stab wickeln"}</button></div>`;
+  if(sc.slider)h+=`<div class="lbl-s">Abstand Stab – Teller: <span id="dVal">${fmt((PY-r.tip.y)/PX)} cm</span></div><input id="dSlider" type="range" min="1" max="10" step="0.5" value="${(PY-r.tip.y)/PX}"><div class="small" id="rubInfo">Stab gerieben: ${r.rubs}×</div>`;
+  if(sc.ground)h+=`<div class="lbl-s">Erdung</div><div class="btns">${r.es.map((e,i)=>`<button class="btn ${e.grounded?"on":""}" data-act="ground:${i}">${e.grounded?"Finger weg von":"Finger an den Teller"}${r.es.length>1?" E"+(i+1):""}</button>`).join("")}</div>`;
+  if(sc.pm)h+=`<div class="lbl-s">Ladungsportion auf das Elektroskop</div><div class="btns"><button class="btn" data-act="addq:1">+ positive Portion</button><button class="btn" data-act="addq:-1">− negative Portion</button><button class="btn" data-act="discharge">Entladen</button></div>`;
+  if(sc.bridge)h+=`<div class="lbl-s">E1 und E2 verbinden</div><div class="seg" style="margin-bottom:8px"><button class="btn ${r.bridge===null?"on":""}" data-act="bridge:none">kein Bügel</button><button class="btn ${r.bridge==="iso"?"on":""}" data-act="bridge:iso">Kunststoffbügel</button><button class="btn ${r.bridge==="metal"?"on":""}" data-act="bridge:metal">Metallbügel</button></div>`;
+  if(sc.lamp)h+=`<div class="lbl-s">Ladungsart prüfen</div><div class="btns">${r.es.map((e,i)=>`<button class="btn" data-act="lamp:${i}">Glimmlampe an E${i+1}</button>`).join("")}</div>`;
+  if(sc.spoon)h+=`<div class="lbl-s">Ladung der Kugel</div><div class="seg" style="margin-bottom:8px"><button class="btn ${r.srcSign>0?"on":""}" data-act="src:1">positiv (+)</button><button class="btn ${r.srcSign<0?"on":""}" data-act="src:-1">negativ (−)</button></div>
+     <div class="btns"><button class="btn primary" data-act="spoon">Ladungsportion übertragen</button><button class="btn" data-act="discharge">Entladen (Finger)</button></div><div class="small" id="nInfo">Übertragene Portionen: ${r.n}</div>`;
+  if(sc.charge)h+=`<div class="lbl-s">Ladungsart</div><div class="seg" style="margin-bottom:8px"><button class="btn ${r.sign>0?"on":""}" data-act="sign:1">positiv (+)</button><button class="btn ${r.sign<0?"on":""}" data-act="sign:-1">negativ (−)</button></div>
+     <div class="btns"><button class="btn primary" data-act="addq">Ladungsportion hinzufügen</button><button class="btn" data-act="discharge">Entladen (Finger)</button></div>
+     <div class="btns"><button class="btn ${r.elOff?"on":""}" data-act="eloff">${r.elOff?"Elektrische Kraft wieder zulassen":"Elektrische Kraft wegdenken"}</button></div><div class="small" id="nInfo">Ladungsportionen: ${r.n}</div>`;
+  h+=`<div class="btns" style="margin-top:6px"><button class="btn danger" data-act="reset">Versuch zurücksetzen</button></div><div class="msg" id="msg">${r.msg||"&nbsp;"}</div>`;
+  return h;
+}
+function buildPanel(){
+  const cfg=cur.cfg;let h=`<h2>${cfg.title}</h2><p class="lead">${cfg.lead}</p>`;
+  if(cfg.summary){panel.innerHTML=h+summaryHTML();return;}
+  if(cfg.real)h+=`<div class="card real"><b>Bezug zum Unterricht</b><br>${cfg.real}</div>`;
+  if(cfg.html)h+=cfg.html;
+  if(cfg.steps)h+=`<div class="card"><h3>Versuchsanleitung</h3><ol class="steps">${cfg.steps.map(s=>`<li>${s}</li>`).join("")}</ol></div>`;
+  if(cfg.scene.rods||cfg.scene.spoon||cfg.scene.charge)h+=`<div class="card" id="ctrl">${controlsHTML(cfg)}</div>`;
+  if(cfg.table)h+=`<div class="card"><h3>Messtabelle</h3><div class="btns"><button class="btn primary" data-act="record">Messwert aufnehmen</button><button class="btn danger" data-act="clearrows">Tabelle leeren</button></div><div id="tbl"></div></div>`;
+  if(cfg.qs)h+=`<div class="card"><h3>Beobachten und erklären</h3>${cfg.qs.map((q,qi)=>`<div class="q" data-qi="${qi}"><p>${qi+1}. ${q.q}</p>${q.o.map((o,oi)=>`<button class="opt" data-act="ans:${qi}:${oi}">${o}</button>`).join("")}<div class="fb"></div></div>`).join("")}</div>`;
+  if(cfg.jd)h+=`<div class="card"><h3>Je-desto-Satz bilden</h3><p class="small" style="margin-top:0">Nutze deine Messtabelle und das Diagramm.</p>${cfg.jd.map((j,ji)=>jdHTML(cfg,j,ji)).join("")}</div>`;
+  if(cfg.info)h+=`<div class="card"><details><summary>Erklärung (erst nach dem Versuch öffnen)</summary><p>${cfg.info}</p></details>${cfg.merk?`<details><summary>Merksatz</summary><div class="merk">${cfg.merk}</div></details>`:""}</div>`;
+  else if(cfg.merk)h+=`<div class="card"><details><summary>Merksatz</summary><div class="merk">${cfg.merk}</div></details></div>`;
+  h+=`<div class="card"><h3>Meine Notizen</h3><textarea id="notes" placeholder="Beobachtungen, Erklärungen, Fragen …">${esc(LS.get("notes."+cfg.id,""))}</textarea></div>`;
+  panel.innerHTML=h;
+  if(cfg.table)renderTable();
+  restoreAnswers();
+  const ta=$("#notes");if(ta)ta.addEventListener("input",()=>LS.set("notes."+cfg.id,ta.value));
+  bindSlider();
+}
+function bindSlider(){const sl=$("#dSlider");if(sl)sl.addEventListener("input",()=>setDist(+sl.value));}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function refreshControls(){const c=$("#ctrl");if(c){c.innerHTML=controlsHTML(cur.cfg);bindSlider();}}
+function setMsg(t){cur.msg=t;const m=$("#msg");if(m)m.textContent=t;}
+function jdHTML(cfg,j,ji){
+  const saved=LS.get(`jd.${cfg.id}.${ji}`,null);
+  const sel=(p,opts)=>`<select data-p="${p}"><option value="">…</option>${opts.map(o=>`<option ${saved&&saved.v[p]===o?"selected":""}>${o}</option>`).join("")}</select>`;
+  return `<div class="jd" data-ji="${ji}" style="margin-bottom:10px">Je ${sel(0,JD_ADJ)} ${sel(1,j.qty)}, desto ${sel(2,JD_ADJ)} ${sel(3,j.res)}. <button class="btn" data-act="jd:${ji}" style="margin-left:4px">Prüfen</button><div class="fb ${saved&&saved.ok?"ok":""}">${saved&&saved.ok?"✓ Richtig! "+j.hint:""}</div></div>`;
+}
+function checkJD(ji){
+  const cfg=cur.cfg,j=cfg.jd[ji],box=panel.querySelector(`.jd[data-ji="${ji}"]`),fb=box.querySelector(".fb");
+  const v=[...box.querySelectorAll("select")].map(s=>s.value);
+  if(v.some(x=>!x)){fb.className="fb no";fb.textContent="Fülle zuerst alle Lücken aus.";return;}
+  const rel=v[0]===v[2]?1:-1,match=j.ok.find(o=>o.q===v[1]&&o.r.includes(v[3]));let ok=false;
+  if(!match){fb.className="fb no";fb.textContent=(v[1]==="die Masse des Zeigers"||v[3]==="die Gewichtskraft"||v[1]==="die Gewichtskraft")?"Diese Größe hast du im Versuch nicht verändert bzw. sie ändert sich nicht. Welche Größe hast du verändert, welche beobachtet?":"Diese Kombination passt nicht zu diesem Satz. Welche Größe hast du hier verändert?";}
+  else if(match.rel!==rel){fb.className="fb no";fb.textContent="Die Größen stimmen, aber die Richtung nicht. Schau in deine Tabelle: Was passiert mit dem Ausschlag, wenn die Größe wächst?";}
+  else{ok=true;fb.className="fb ok";fb.textContent="✓ Richtig! "+j.hint;}
+  LS.set(`jd.${cfg.id}.${ji}`,{v,ok,text:`Je ${v[0]} ${v[1]}, desto ${v[2]} ${v[3]}.`});
+}
+function answer(qi,oi){
+  const q=cur.cfg.qs[qi],box=panel.querySelector(`.q[data-qi="${qi}"]`),fb=box.querySelector(".fb"),btn=box.querySelectorAll(".opt")[oi];
+  if(oi===q.c){box.querySelectorAll(".opt").forEach(b=>b.classList.remove("wrong"));btn.classList.add("right");fb.className="fb ok";fb.innerHTML="✓ Richtig! "+(q.ex||"");const a=LS.get("ans."+cur.cfg.id,{});a[qi]=oi;LS.set("ans."+cur.cfg.id,a);}
+  else{btn.classList.add("wrong");fb.className="fb no";fb.textContent="Leider nicht. Beobachte den Versuch noch einmal genau und versuche es erneut.";}
+}
+function restoreAnswers(){
+  const a=LS.get("ans."+cur.cfg.id,{});Object.keys(a).forEach(qi=>{const q=cur.cfg.qs&&cur.cfg.qs[qi];if(!q)return;const box=panel.querySelector(`.q[data-qi="${qi}"]`);if(!box)return;
+    box.querySelectorAll(".opt")[q.c].classList.add("right");const fb=box.querySelector(".fb");fb.className="fb ok";fb.innerHTML="✓ Richtig! "+(q.ex||"");});
+}
+function rowsOf(id){return LS.get("rows."+id,[]);}
+function renderTable(){
+  const cfg=cur.cfg,T=cfg.table,rows=rowsOf(cfg.id),el=$("#tbl");
+  let h=`<table><thead><tr><th>Nr.</th>${T.cols.map(c=>`<th>${c.l}</th>`).join("")}<th></th></tr></thead><tbody>`;
+  if(!rows.length)h+=`<tr><td colspan="${T.cols.length+2}" class="small">Noch keine Messwerte.</td></tr>`;
+  rows.forEach((row,i)=>{h+=`<tr><td>${i+1}</td>${T.cols.map(c=>c.edit?`<td><input data-row="${i}" data-k="${c.k}" value="${esc(row[c.k]||"")}" placeholder="…"></td>`:`<td>${fmt(row[c.k],c.d)}</td>`).join("")}<td><button class="x" data-act="delrow:${i}" aria-label="Zeile löschen">×</button></td></tr>`;});
+  h+=`</tbody></table>`;if(T.x&&rows.length)h+=chartSVG(rows,T);el.innerHTML=h;
+  el.querySelectorAll("input[data-row]").forEach(inp=>inp.addEventListener("input",()=>{const rs=rowsOf(cfg.id);rs[+inp.dataset.row][inp.dataset.k]=inp.value;LS.set("rows."+cfg.id,rs);}));
+}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of[1,2,2.5,5,10])if(m*p>=v)return m*p;return 10*p;}
+function chartSVG(rows,T){
+  const Wd=360,Hd=240,L=46,B=40,Rr=12,Tt=12,xs=rows.map(r=>r[T.x]),ys=rows.map(r=>r[T.y]);
+  const xm=niceMax(Math.max(...xs)*1.05),ym=niceMax(Math.max(...ys)*1.05),X=v=>L+(Wd-L-Rr)*v/xm,Y=v=>Hd-B-(Hd-B-Tt)*v/ym;
+  let g=`<svg class="chart" viewBox="0 0 ${Wd} ${Hd}"><rect width="${Wd}" height="${Hd}" fill="#fff"/>`;
+  for(let k=0;k<=5;k++){const xv=xm*k/5,yv=ym*k/5;
+    g+=`<line x1="${X(xv)}" y1="${Tt}" x2="${X(xv)}" y2="${Hd-B}" stroke="#eef2f7"/><line x1="${L}" y1="${Y(yv)}" x2="${Wd-Rr}" y2="${Y(yv)}" stroke="#eef2f7"/>`;
+    g+=`<text x="${X(xv)}" y="${Hd-B+16}" font-size="11" text-anchor="middle" fill="#475569">${fmt(xv,xm<5?1:0)}</text><text x="${L-6}" y="${Y(yv)+4}" font-size="11" text-anchor="end" fill="#475569">${fmt(yv,ym<5?1:0)}</text>`;}
+  g+=`<line x1="${L}" y1="${Hd-B}" x2="${Wd-Rr}" y2="${Hd-B}" stroke="#334155" stroke-width="1.5"/><line x1="${L}" y1="${Tt}" x2="${L}" y2="${Hd-B}" stroke="#334155" stroke-width="1.5"/>`;
+  g+=`<text x="${(L+Wd-Rr)/2}" y="${Hd-6}" font-size="12.5" text-anchor="middle" fill="#0f172a" font-weight="600">${T.xl}</text><text transform="translate(13,${(Tt+Hd-B)/2}) rotate(-90)" font-size="12.5" text-anchor="middle" fill="#0f172a" font-weight="600">${T.yl}</text>`;
+  rows.forEach(r=>{g+=`<circle cx="${X(r[T.x]).toFixed(1)}" cy="${Y(r[T.y]).toFixed(1)}" r="5" fill="#2563eb" stroke="#fff" stroke-width="1.5"/>`;});
+  return g+"</svg>";
+}
+function summaryHTML(){
+  let h="";
+  STATIONS.filter(s=>s.merk).forEach(s=>{const jds=(s.jd||[]).map((j,ji)=>LS.get(`jd.${s.id}.${ji}`,null)).filter(x=>x&&x.ok);
+    h+=`<div class="card"><h3>${s.title}</h3>${jds.length?`<p class="small" style="margin:0 0 4px">Dein Je-desto-Satz: <b>${jds.map(x=>esc(x.text)).join(" · ")}</b></p>`:""}<details><summary>Merksatz aufdecken</summary><div class="merk">${s.merk}</div></details></div>`;});
+  h+=`<div class="card"><h3>Überblick</h3><table><tr><th>Frage</th><th>Versuch</th><th>Ergebnis</th></tr>
+   <tr><td>Gibt es Ladung?</td><td>V1</td><td>Geriebener Stab → Ausschlag bleibt</td></tr>
+   <tr><td>Influenz</td><td>V2</td><td>Ladungstrennung ohne Berührung; Ausschlag geht zurück</td></tr>
+   <tr><td>Kontakt</td><td>V3</td><td>Ladung geht über, verteilt sich über Leiter</td></tr>
+   <tr><td>Gibt es eine elektrische Kraft?</td><td>V4</td><td>Zeiger ruht schräg: Gleichgewicht mit F<sub>G</sub></td></tr>
+   <tr><td>Zwei Ladungsarten?</td><td>V5</td><td>+ und − heben sich auf</td></tr>
+   <tr><td>Was heißt neutral?</td><td>V6</td><td>gleich viele + und −; Ladung wird nur getrennt</td></tr>
+   <tr><td>Ladungsmenge</td><td>V7</td><td>Je mehr Ladung, desto größer F<sub>el</sub></td></tr>
+   <tr><td>Abstand</td><td>V8</td><td>Je kleiner d, desto größer F<sub>el</sub></td></tr></table></div>`;
+  h+=`<div class="card"><h3>Daten</h3><p class="small">Alle Tabellen, Antworten und Notizen sind nur auf diesem Gerät im Browser gespeichert.</p><button class="btn danger" data-act="wipe">Alle meine Daten löschen</button></div>`;
+  return h;
+}
+panel.addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-act]");if(!b)return;
+  const[act,a1,a2]=b.dataset.act.split(":"),r=cur;
+  switch(act){
+    case"rod":r.rodType=a1;updateRodLook();refreshControls();setMsg(`${RODS[a1].name} gewählt. Reiben am ${RODS[a1].cloth}.`);break;
+    case"rub":rub();break;
+    case"rodreset":{const rod=curRod();rod.Q=0;r.clothQ[r.rodType]=0;r.rubs=0;setMsg("Stab und Tuch entladen.");const ri=$("#rubInfo");if(ri)ri.textContent="Stab gerieben: 0×";break;}
+    case"rodhome":r.tip={x:135,y:440};break;
+    case"wrap":r.wrap=!r.wrap;if(r.wrap&&r.tip.x<250&&r.tip.y>480)r.tip={x:135,y:440};refreshControls();setMsg(r.wrap?"Das Tuch ist um den Stab gewickelt.":"Tuch abgenommen und auf den Tisch gelegt.");break;
+    case"ground":{const e=r.es[+a1];e.grounded=!e.grounded;setMsg(e.grounded?`Finger berührt den Teller von E${+a1+1} (Erdung).`:`Finger von E${+a1+1} weggenommen.`);refreshControls();break;}
+    case"bridge":r.bridge=a1==="none"?null:a1;refreshControls();setMsg(a1==="metal"?"E1 und E2 sind mit dem Metallbügel verbunden.":a1==="iso"?"E1 und E2 sind mit dem Kunststoffbügel verbunden.":"Bügel entfernt.");break;
+    case"lamp":{const e=r.es[+a1];if(Math.abs(e.Q)<1.2)setMsg(`Glimmlampe an E${+a1+1}: kein Leuchten – kaum Ladung.`);else{r.lamp={i:+a1,t:0,neg:e.Q<0};setMsg(`Glimmlampe an E${+a1+1}: Beobachte, auf welcher Seite es leuchtet (Teller oder Hand)!`);}break;}
+    case"src":r.srcSign=+a1;refreshControls();break;
+    case"spoon":if(!r.anim)r.anim={t:0,dur:1.4,done:false};break;
+    case"sign":r.sign=+a1;refreshControls();break;
+    case"addq":{const sg=a1?+a1:r.sign;r.es[0].Q+=sg*PORTION;if(!a1)r.n++;setMsg(a1?`${sg>0?"Positive":"Negative"} Ladungsportion auf das Elektroskop gebracht.`:`Ladungsportion ${r.n} hinzugefügt.`);const ni=$("#nInfo");if(ni&&!a1)ni.textContent=`Ladungsportionen: ${r.n}`;break;}
+    case"discharge":r.es.forEach(e=>{e.Q=0;e.finger=.7;});r.n=0;setMsg("Elektroskop mit dem Finger entladen.");{const ni=$("#nInfo");if(ni)ni.textContent=(r.sc.spoon?"Übertragene Portionen: ":"Ladungsportionen: ")+"0";}break;
+    case"eloff":r.elOff=!r.elOff;refreshControls();setMsg(r.elOff?"Gedankenexperiment: Nur die Gewichtskraft wirkt.":"Die elektrische Kraft wirkt wieder.");break;
+    case"reset":cache[r.cfg.id]=makeRuntime(r.cfg);cur=cache[r.cfg.id];buildScene();buildPanel();setMsg("Versuch zurückgesetzt.");break;
+    case"record":{const T=r.cfg.table;
+      if(T.needRest&&r.es.some(e=>Math.abs(e.om)>.04)){setMsg("Warte, bis der Zeiger ruht – erst dann ablesen!");break;}
+      const rows=rowsOf(r.cfg.id);rows.push(T.rec(r));LS.set("rows."+r.cfg.id,rows);renderTable();setMsg(`Messwert ${rows.length} aufgenommen.`);break;}
+    case"delrow":{const rows=rowsOf(r.cfg.id);rows.splice(+a1,1);LS.set("rows."+r.cfg.id,rows);renderTable();break;}
+    case"clearrows":if(confirm("Alle Messwerte dieser Tabelle löschen?")){LS.set("rows."+r.cfg.id,[]);renderTable();}break;
+    case"ans":answer(+a1,+a2);break;
+    case"jd":checkJD(+a1);break;
+    case"wipe":if(confirm("Wirklich alle Tabellen, Antworten und Notizen löschen?")){LS.clear();buildPanel();}break;
+  }
+});
+
+/* ============ Stationen wechseln ============ */
+function buildTabs(){$("#tabs").innerHTML=STATIONS.map((s,i)=>`<button data-i="${i}" class="${i===curIdx?"on":""}">${s.tab}</button>`).join("");}
+$("#tabs").addEventListener("click",ev=>{const b=ev.target.closest("button");if(b)go(+b.dataset.i);});
+function go(i){
+  curIdx=i;const cfg=STATIONS[i];if(!cache[cfg.id])cache[cfg.id]=makeRuntime(cfg);
+  cur=cache[cfg.id];drag=null;buildTabs();buildScene();buildPanel();panel.scrollTop=0;LS.set("station",i);
+  const on=$("#tabs .on");if(on&&on.scrollIntoView)on.scrollIntoView({inline:"center",block:"nearest"});
+}
+const CM=["Ladungen: aus","Ladungen: Überschuss","Ladungen: alle (+ und −)"];
+$("#chgToggle").addEventListener("click",()=>{chargeMode=(chargeMode+1)%3;const t=$("#chgToggle");t.classList.toggle("on",chargeMode>0);t.textContent=CM[chargeMode];});
+function setHH(){document.documentElement.style.setProperty("--hh",$("#hdr").offsetHeight+"px");}
+window.addEventListener("resize",()=>{setHH();resize();});
+document.addEventListener("gesturestart",e=>e.preventDefault());
+
+let last=performance.now();
+function loop(now){const dt=Math.min(.04,(now-last)/1000);last=now;if(cur){step(dt);render3D();}requestAnimationFrame(loop);}
+const ok3d=initThree();
+setHH();
+if(ok3d){bindPointer();}
+go(clamp(LS.get("station",0)|0,0,STATIONS.length-1));
+resize();
+if(window.ResizeObserver)new ResizeObserver(()=>resize()).observe(stage);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
